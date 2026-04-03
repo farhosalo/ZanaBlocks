@@ -8,6 +8,21 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_STATIC_LIBRARY_PREFIX "")
+add_compile_definitions(
+    QT_NO_KEYWORDS          # Avoid signal/slot macro conflicts
+)
+
+if (NOT MSVC)
+    add_compile_options(
+        -Wall -Wextra -Wpedantic
+        -Wno-unused-parameter
+        -Wno-deprecated-declarations
+    )
+else()
+    add_compile_options(/W4 /permissive- /wd4251 /wd4127)
+endif()
+
 #Clang-Format
 find_program(CLANG_FORMAT_BIN clang-format REQUIRED)
 
