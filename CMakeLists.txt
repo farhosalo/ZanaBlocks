@@ -19,3 +19,6 @@ set(CLANG_TIDY_COMMAND
     "--config-file=${CMAKE_SOURCE_DIR}/.clang-tidy"
     "--header-filter=.*"   # also lint headers
 )
+
+#Include directories
+include_directories(${CMAKE_SOURCE_DIR}/Utilities)
