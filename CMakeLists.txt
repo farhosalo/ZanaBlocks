@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 4.2)
 
-project(KidTech)
+project(KidTech, VERSION 0.0.1)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
