@@ -41,3 +41,4 @@ include_directories(${CMAKE_SOURCE_DIR}/Utilities)
 set(INSTALL_DIR ${CMAKE_SOURCE_DIR}/install) 
 
 add_subdirectory(Schema)
+add_subdirectory(Interpreter)
