@@ -1,9 +1,8 @@
 #pragma once
 
-#include <ctime>
-#include <iostream>
-#include <string>
+#include "DateTime.h"
 
+namespace KidTech::Utilities {
 auto constexpr RESET{"\033[0m"};
 auto constexpr WHITE{"\033[37m"};
 auto constexpr CYAN{"\033[36m"};
@@ -12,15 +11,6 @@ auto constexpr RED{"\033[31m"};
 auto constexpr LIGHT_RED{"\033[91m"};
 auto constexpr PURPLE{"\033[35m"};
 
-inline std::string timestamp() {
-  const auto time = std::time(nullptr);
-  auto constexpr BUF_SIZE{20};
-  std::array<char, BUF_SIZE> buf{};
-  std::strftime(buf.data(), buf.size(), "%Y-%m-%d %H:%M:%S",
-                std::localtime(&time));
-
-  return std::string{buf.data()};
-}
 // NOLINTBEGIN (cppcoreguidelines-macro-usage)
 #define LOG(color, level, msg)                                            \
   std::cout << color << "[" << timestamp() << "] "                        \
@@ -37,5 +27,5 @@ inline std::string timestamp() {
     LOG(RED, "FATAL", msg);  \
     std::exit(EXIT_FAILURE); \
   } while (0)
-
 // NOLINTEND
+}  // namespace KidTech::Utilities
