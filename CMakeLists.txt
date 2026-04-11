@@ -37,3 +37,5 @@ set(CLANG_TIDY_COMMAND
 
 #Include directories
 include_directories(${CMAKE_SOURCE_DIR}/Utilities)
+
+set(INSTALL_DIR ${CMAKE_SOURCE_DIR}/install) 
