@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package KidLang.Schema;
+package KidTech.Schema;
 
 // A print action that can be used to output a message.
 message Print{
