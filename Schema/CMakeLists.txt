@@ -2,7 +2,7 @@ project(Schema VERSION 0.0.1)
 
 find_package(Protobuf CONFIG)
 
-configure_file(${PROJECT_NAME}.h.in ${PROJECT_NAME}.h @ONLY)
+configure_file(${PROJECT_NAME}.h.in ${PROJECT_NAME}Info.h @ONLY)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set (PROTO_FILES
