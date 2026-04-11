@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package KidLang.Schema;
+
+// A print action that can be used to output a message.
+message Print{
+    string msg = 1; // message to print
+}
+
+// A sleep action that can be used to pause execution for a specified duration.
+message Sleep{
+    int32 duration = 1; // duration in milliseconds
+}
+
+// A loop that can contain multiple actions, which can be prints, sleeps, or nested loops.
+message Loop {
+    int32 count = 1; // number of iterations
+    repeated Action actions = 2; // actions to perform in each iteration
+    // You can add more fields here if needed, such as a condition for the loop to break early  
+}
+
+// A single action to perform, which can be a print, sleep, or another loop.
+message Action { //Single action to perform
+    string name = 1;
+    oneof action {
+        Print print = 2;
+        Sleep sleep = 3;
+        Loop loop = 4;
+    }
+}
+
+// The root message that contains the main loop of actions to execute.
+message Root {
+    Loop mainLoop = 1; // The main loop of actions to execute
+}
