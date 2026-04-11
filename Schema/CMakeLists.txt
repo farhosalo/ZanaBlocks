@@ -4,7 +4,6 @@ find_package(Protobuf CONFIG)
 
 configure_file(${PROJECT_NAME}.h.in ${PROJECT_NAME}Info.h @ONLY)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set (PROTO_FILES
     proto/Schema.proto
 )
