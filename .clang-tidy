@@ -13,6 +13,8 @@ Checks: >
   misc-*,
   -misc-include-cleaner,
   -modernize-use-trailing-return-type,
+  -misc-no-recursion,
+  -readability-use-anyofallof,
 
 WarningsAsErrors: ""
 HeaderFilterRegex: ".*"
