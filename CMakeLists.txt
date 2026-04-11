@@ -36,7 +36,11 @@ set(CLANG_TIDY_COMMAND
 )
 
 #Include directories
-include_directories(${CMAKE_SOURCE_DIR}/Utilities)
+include_directories(
+    ${CMAKE_SOURCE_DIR}/Utilities
+    ${CMAKE_BINARY_DIR}/Schema
+    ${CMAKE_BINARY_DIR}/Interpreter
+    )
 
 set(INSTALL_DIR ${CMAKE_SOURCE_DIR}/install) 
 
