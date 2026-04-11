@@ -12,6 +12,12 @@ message Sleep{
     int32 duration = 1; // duration in milliseconds
 }
 
+// An LED action that can be used to control an LED on the device.
+message LED{
+    int32 pin = 1; // which LED to control
+    bool state = 2; // true for on, false for off
+}
+
 // A loop that can contain multiple actions, which can be prints, sleeps, or nested loops.
 message Loop {
     int32 count = 1; // number of iterations
@@ -26,6 +32,7 @@ message Action { //Single action to perform
         Print print = 2;
         Sleep sleep = 3;
         Loop loop = 4;
+        LED led = 5;
     }
 }
 
