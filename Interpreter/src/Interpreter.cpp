@@ -2,7 +2,11 @@
 
 #include <fstream>
 
+#include "Logging.h"
+
 namespace KidTech::Interpreter {
+using namespace Utilities;
+
 bool Interpreter::interpret(const std::shared_ptr<Schema::Root>& schema) {
   reset();
 
@@ -12,16 +16,14 @@ bool Interpreter::interpret(const std::shared_ptr<Schema::Root>& schema) {
   return false;
 }
 
-bool Interpreter::extractPrint(const Schema::Print& print) {
+auto Interpreter::extractPrint(const Schema::Print& print) {
   auto line = "print(\"" + print.msg() + "\")";
   mLines.emplace_back(mCurrentLevel, line);
-  return true;
 }
 
-bool Interpreter::extractSleep(const Schema::Sleep& sleep) {
+auto Interpreter::extractSleep(const Schema::Sleep& sleep) {
   auto line = "sleep_ms(" + std::to_string(sleep.duration()) + ")";
   mLines.emplace_back(mCurrentLevel, line);
-  return true;
 }
 
 auto Interpreter::extractLed(const Schema::LED& led) {
@@ -66,13 +68,9 @@ bool Interpreter::extractLoop(const Schema::Loop& loop) {
   mCurrentLevel++;
   for (const auto& action : loop.actions()) {
     if (action.has_print()) {
-      if (!extractPrint(action.print())) {
-        return false;
-      }
+      extractPrint(action.print());
     } else if (action.has_sleep()) {
-      if (!extractSleep(action.sleep())) {
-        return false;
-      }
+      extractSleep(action.sleep());
     } else if (action.has_loop()) {
       if (!extractLoop(action.loop())) {
         return false;
@@ -80,6 +78,7 @@ bool Interpreter::extractLoop(const Schema::Loop& loop) {
     } else if (action.has_led()) {
       extractLed(action.led());
     } else {
+      ERROR("Unknown action type in loop");
       return false;  // Unknown action type
     }
   }
