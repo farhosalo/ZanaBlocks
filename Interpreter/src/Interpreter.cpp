@@ -12,36 +12,6 @@ bool Interpreter::interpret(const std::shared_ptr<Schema::Root>& schema) {
   return false;
 }
 
-bool Interpreter::extractLoop(const Schema::Loop& loop) {
-  std::string line;
-  if (loop.count() <= 0) {
-    line = "while True:";
-  } else {
-    line = "for i in range(" + std::to_string(loop.count()) + "):";
-  }
-  mLines.emplace_back(mCurrentLevel, line);
-  mCurrentLevel++;
-  for (const auto& action : loop.actions()) {
-    if (action.has_print()) {
-      if (!extractPrint(action.print())) {
-        return false;
-      }
-    } else if (action.has_sleep()) {
-      if (!extractSleep(action.sleep())) {
-        return false;
-      }
-    } else if (action.has_loop()) {
-      if (!extractLoop(action.loop())) {
-        return false;
-      }
-    } else {
-      return false;  // Unknown action type
-    }
-  }
-
-  return true;
-}
-
 bool Interpreter::extractPrint(const Schema::Print& print) {
   auto line = "print(\"" + print.msg() + "\")";
   mLines.emplace_back(mCurrentLevel, line);
@@ -52,6 +22,14 @@ bool Interpreter::extractSleep(const Schema::Sleep& sleep) {
   auto line = "sleep_ms(" + std::to_string(sleep.duration()) + ")";
   mLines.emplace_back(mCurrentLevel, line);
   return true;
+}
+
+auto Interpreter::extractLed(const Schema::LED& led) {
+  auto line = "led = Pin(" + std::to_string(led.pin()) + ", Pin.OUT)";
+  mLines.emplace_back(mCurrentLevel, line);
+  const std::string ledState = led.state() ? "1" : "0";
+  line = "led.value(" + ledState + ")";
+  mLines.emplace_back(mCurrentLevel, line);
 }
 
 bool Interpreter::saveToFile(const std::string& filename) {
@@ -75,5 +53,37 @@ void Interpreter::reset() {
   mLines.emplace_back(0, "from machine import Pin");
   mLines.emplace_back(0, "from time import sleep_ms");
   mLines.emplace_back(0, "");
+}
+
+bool Interpreter::extractLoop(const Schema::Loop& loop) {
+  std::string line;
+  if (loop.count() <= 0) {
+    line = "while True:";
+  } else {
+    line = "for i in range(" + std::to_string(loop.count()) + "):";
+  }
+  mLines.emplace_back(mCurrentLevel, line);
+  mCurrentLevel++;
+  for (const auto& action : loop.actions()) {
+    if (action.has_print()) {
+      if (!extractPrint(action.print())) {
+        return false;
+      }
+    } else if (action.has_sleep()) {
+      if (!extractSleep(action.sleep())) {
+        return false;
+      }
+    } else if (action.has_loop()) {
+      if (!extractLoop(action.loop())) {
+        return false;
+      }
+    } else if (action.has_led()) {
+      extractLed(action.led());
+    } else {
+      return false;  // Unknown action type
+    }
+  }
+
+  return true;
 }
 }  // namespace KidTech::Interpreter

@@ -33,6 +33,7 @@ class Interpreter {
   bool extractLoop(const Schema::Loop& loop);
   bool extractPrint(const Schema::Print& print);
   bool extractSleep(const Schema::Sleep& sleep);
+  auto extractLed(const Schema::LED& led);
 
   void reset();
   int mCurrentLevel{0};
