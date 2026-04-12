@@ -26,3 +26,12 @@ target_link_libraries(${PROJECT_NAME}
 )   
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${INSTALL_DIR}/lib)
+
+
+file(GLOB_RECURSE HEADERS
+    ${CMAKE_CURRENT_BINARY_DIR}/*.h
+)
+
+install(FILES ${HEADERS}
+    DESTINATION ${INSTALL_DIR}/include/${PROJECT_NAME}
+)
