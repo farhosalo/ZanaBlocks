@@ -20,12 +20,12 @@ file(GLOB_RECURSE ALL_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
 )
-add_custom_target(check-format
+add_custom_target(${PROJECT_NAME}_format
     COMMAND ${CLANG_FORMAT_BIN} --dry-run --Werror --style=Google ${ALL_SOURCE_FILES}
 )
 
 #Format checking
-add_dependencies(${PROJECT_NAME} check-format)
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_format)
 
 # Integrate clang-tidy with the build process of the main target
 set_target_properties(${PROJECT_NAME} PROPERTIES
