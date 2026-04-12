@@ -4,6 +4,11 @@ configure_file(src/${PROJECT_NAME}.h.in ${PROJECT_NAME}Info.h @ONLY)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+set(HEADERS
+    src/Interpreter.h
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Info.h
+)
+
 add_library(${PROJECT_NAME}
     src/Interpreter.cpp
 )
@@ -25,4 +30,13 @@ add_dependencies(${PROJECT_NAME} check-format)
 # Integrate clang-tidy with the build process of the main target
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}"
+)
+
+install(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION ${INSTALL_DIR}/bin
+    LIBRARY DESTINATION ${INSTALL_DIR}/lib
+    ARCHIVE DESTINATION ${INSTALL_DIR}/lib
+)
+install(FILES ${HEADERS}
+    DESTINATION ${INSTALL_DIR}/include/${PROJECT_NAME}
 )
