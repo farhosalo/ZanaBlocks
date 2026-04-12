@@ -1,15 +1,27 @@
 #include "MainWindow.h"
 
+#include <QAction>
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QListWidget>
+#include <QMenu>
+#include <QMenuBar>
 #include <QPlainTextEdit>
 #include <QSplitter>
 #include <QStatusBar>
+#include <QToolBar>
 
 namespace KidTech::IDE {
 auto constexpr WINDOW_SIZE_WIDTH{1100};
 auto constexpr WINDOW_SIZE_HEIGHT{750};
+
+auto MainWindow::run() {
+  mLogOutput->appendPlainText("Running the program...");
+}
+auto MainWindow::save() {
+  mLogOutput->appendPlainText("Saving the program...");
+}
+auto MainWindow::open() { mLogOutput->appendPlainText("Opening a program..."); }
 
 auto MainWindow::initUI() {
   // Right side: Diagram View + Log Output
@@ -60,10 +72,40 @@ auto MainWindow::initUI() {
   setCentralWidget(mainSplitter);
 }
 
+auto MainWindow::initMenuAndToolbar() {
+  auto* toolBar = addToolBar("Main Toolbar");
+  auto* fileMenu = menuBar()->addMenu("&File");
+
+  // File menu actions
+  auto* openAction = fileMenu->addAction("📂  Open");
+  auto* saveAction = fileMenu->addAction("💾  Save");
+
+  fileMenu->addSeparator();
+  auto* closeAction = fileMenu->addAction("❌  Close");
+
+  toolBar->addAction(openAction);
+  toolBar->addAction(saveAction);
+  toolBar->addAction(closeAction);
+
+  connect(openAction, &QAction::triggered, this, &MainWindow::open);
+  connect(saveAction, &QAction::triggered, this, &MainWindow::save);
+  connect(closeAction, &QAction::triggered, this, &QWidget::close);
+
+  // Run menu actions
+  auto* runMenu = menuBar()->addMenu("&Run");
+  auto* runAction = runMenu->addAction("▶️  Run");
+
+  toolBar->addSeparator();
+  toolBar->addAction(runAction);
+
+  connect(runAction, &QAction::triggered, this, &MainWindow::run);
+}
+
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   setWindowTitle("KindTech IDE");
   resize(WINDOW_SIZE_WIDTH, WINDOW_SIZE_HEIGHT);
 
   initUI();
+  initMenuAndToolbar();
 }
 }  // namespace KidTech::IDE

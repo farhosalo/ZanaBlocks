@@ -15,6 +15,12 @@ class MainWindow : public QMainWindow {
 
  private:
   auto initUI();
+  auto initMenuAndToolbar();
+
+  auto run();
+  auto save();
+  auto open();
+
   QGraphicsView* mDiagramView{nullptr};
   QGraphicsScene* mDiagramScene{nullptr};
   QPlainTextEdit* mLogOutput{nullptr};
