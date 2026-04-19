@@ -9,14 +9,15 @@ configure_file(src/${PROJECT_NAME}.h.in ${PROJECT_NAME}Info.h @ONLY)
 
 add_library(lib${PROJECT_NAME}
     src/MainWindow.cpp
+    src/ReplClient.cpp
     src/LogOutput.cpp
 )
 
 target_link_libraries(lib${PROJECT_NAME}
-    Qt6::Core
+    Qt6::Core 
     Qt6::Widgets
+    serialport
 )
-
 add_executable(${PROJECT_NAME}
     src/main.cpp
 )
@@ -46,7 +47,7 @@ install(TARGETS ${PROJECT_NAME} DESTINATION ${INSTALL_DIR}/bin)
 # Install headers
 set (HEADERS
     src/MainWindow.h
-    src/LogOutput.h
+    src/ReplClient.h
     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Info.h
 )
 install(FILES ${HEADERS}

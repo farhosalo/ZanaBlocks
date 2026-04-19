@@ -11,12 +11,38 @@
 #include <QStatusBar>
 #include <QToolBar>
 
+#include "LogOutput.h"
+#include "Logging.h"
+
 namespace KidTech::IDE {
 auto constexpr WINDOW_SIZE_WIDTH{1100};
 auto constexpr WINDOW_SIZE_HEIGHT{750};
 
+using namespace Utilities;
+
 auto MainWindow::run() {
-  mLogOutput->appendPlainText("Running the program...");
+  if (!mReplClient->connect(PORT)) {
+    mLogOutput->appendPlainText("Failed to connect to device!");
+    return;
+  }
+
+  mLogOutput->appendPlainText("Uploading main.py...\n");
+
+  auto callback = [this](const std::string& message) {
+    mLogOutput->appendPlainText(QString::fromStdString(message));
+  };
+
+  if (!mReplClient->putFile("main.py", "/main.py", callback)) {
+    mLogOutput->appendPlainText("Failed to upload main.py!");
+    return;
+  }
+
+  mLogOutput->appendPlainText("\nUpload complete.\n");
+
+  mLogOutput->appendPlainText("Resetting device...\n");
+  mReplClient->reset();
+
+  mLogOutput->appendPlainText("Done.\n");
 }
 auto MainWindow::save() {
   mLogOutput->appendPlainText("Saving the program...");

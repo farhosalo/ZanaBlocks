@@ -1,6 +1,8 @@
 #pragma once
 #include <QMainWindow>
 
+#include "ReplClient.h"
+
 class QGraphicsView;
 class QGraphicsScene;
 class QPlainTextEdit;
@@ -9,6 +11,8 @@ class QListWidget;
 namespace KidTech::IDE {
 
 class LogOutput;
+
+auto constexpr PORT{"/dev/tty.usbserial-0001"};
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -28,5 +32,8 @@ class MainWindow : public QMainWindow {
   QGraphicsScene* mDiagramScene{nullptr};
   LogOutput* mLogOutput{nullptr};
   QListWidget* mSidebar{nullptr};
+
+  std::unique_ptr<ReplClient::ReplClient> mReplClient{
+      std::make_unique<ReplClient::ReplClient>()};
 };
 }  // namespace KidTech::IDE
