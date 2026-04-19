@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 4.2)
 
 project(KidTech, VERSION 0.0.1)
 
+find_package(PkgConfig REQUIRED)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -43,6 +45,17 @@ include_directories(
     ${CMAKE_BINARY_DIR}/Interpreter
     ${CMAKE_BINARY_DIR}/IDE
 )
+
+# Tell CMake where Homebrew lives — works for both Apple Silicon and Intel
+if(APPLE)
+    if(EXISTS "/opt/homebrew")
+        link_directories(/opt/homebrew/lib)
+        include_directories(/opt/homebrew/include)
+    else()
+        link_directories(/usr/local/lib)
+        include_directories(/usr/local/include)
+    endif()
+endif()
 
 set(INSTALL_DIR ${CMAKE_SOURCE_DIR}/install) 
 
