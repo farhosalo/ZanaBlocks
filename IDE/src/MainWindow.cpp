@@ -41,9 +41,8 @@ auto MainWindow::initUI() {
   statusBar()->showMessage("Ready");
 
   // --- Bottom: Logs / Output ---
-  mLogOutput = new QPlainTextEdit();
+  mLogOutput = new LogOutput();
   mLogOutput->setReadOnly(true);
-  mLogOutput->appendPlainText("Test log output...");
 
   // Add widgets to splitter
   verticalSplitter->addWidget(mDiagramView);

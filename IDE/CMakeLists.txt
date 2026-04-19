@@ -9,7 +9,9 @@ configure_file(src/${PROJECT_NAME}.h.in ${PROJECT_NAME}Info.h @ONLY)
 
 add_library(lib${PROJECT_NAME}
     src/MainWindow.cpp
+    src/LogOutput.cpp
 )
+
 target_link_libraries(lib${PROJECT_NAME}
     Qt6::Core
     Qt6::Widgets
@@ -44,6 +46,7 @@ install(TARGETS ${PROJECT_NAME} DESTINATION ${INSTALL_DIR}/bin)
 # Install headers
 set (HEADERS
     src/MainWindow.h
+    src/LogOutput.h
     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Info.h
 )
 install(FILES ${HEADERS}

@@ -7,6 +7,9 @@ class QPlainTextEdit;
 class QListWidget;
 
 namespace KidTech::IDE {
+
+class LogOutput;
+
 class MainWindow : public QMainWindow {
   Q_OBJECT
 
@@ -23,7 +26,7 @@ class MainWindow : public QMainWindow {
 
   QGraphicsView* mDiagramView{nullptr};
   QGraphicsScene* mDiagramScene{nullptr};
-  QPlainTextEdit* mLogOutput{nullptr};
+  LogOutput* mLogOutput{nullptr};
   QListWidget* mSidebar{nullptr};
 };
 }  // namespace KidTech::IDE
