@@ -13,6 +13,9 @@
 
 #include "LogOutput.h"
 #include "Logging.h"
+#include "Loop.h"
+#include "Node.h"
+#include "Scene.h"
 
 namespace KidTech::IDE {
 auto constexpr WINDOW_SIZE_WIDTH{1100};
@@ -55,7 +58,8 @@ auto MainWindow::initUI() {
   auto* verticalSplitter = new QSplitter(Qt::Vertical);
 
   // --- Top: Graphics View ---
-  mDiagramScene = new QGraphicsScene(this);
+  mDiagramScene = new Scene(this);
+
   mDiagramView = new QGraphicsView(mDiagramScene, this);
 
   mDiagramView->setRenderHint(QPainter::Antialiasing);

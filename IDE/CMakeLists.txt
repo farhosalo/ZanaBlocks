@@ -11,6 +11,10 @@ add_library(lib${PROJECT_NAME}
     src/MainWindow.cpp
     src/ReplClient.cpp
     src/LogOutput.cpp
+    src/Node.cpp
+    src/NodeConnector.cpp
+    src/Scene.cpp
+    src/NodePort.cpp
 )
 
 target_link_libraries(lib${PROJECT_NAME}
@@ -48,6 +52,11 @@ install(TARGETS ${PROJECT_NAME} DESTINATION ${INSTALL_DIR}/bin)
 set (HEADERS
     src/MainWindow.h
     src/ReplClient.h
+    src/LogOutput.h
+    src/Node.h
+    src/NodePort.h
+    src/NodeConnector.h
+    src/Scene.h
     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Info.h
 )
 install(FILES ${HEADERS}

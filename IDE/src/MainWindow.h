@@ -4,11 +4,11 @@
 #include "ReplClient.h"
 
 class QGraphicsView;
-class QGraphicsScene;
 class QPlainTextEdit;
 class QListWidget;
 
 namespace KidTech::IDE {
+class Scene;
 
 class LogOutput;
 
@@ -29,7 +29,7 @@ class MainWindow : public QMainWindow {
   auto open();
 
   QGraphicsView* mDiagramView{nullptr};
-  QGraphicsScene* mDiagramScene{nullptr};
+  Scene* mDiagramScene{nullptr};
   LogOutput* mLogOutput{nullptr};
   QListWidget* mSidebar{nullptr};
 
