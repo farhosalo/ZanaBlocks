@@ -2,8 +2,6 @@
 
 #include <QAction>
 #include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QListWidget>
 #include <QMenu>
 #include <QMenuBar>
 #include <QPlainTextEdit>
@@ -11,11 +9,13 @@
 #include <QStatusBar>
 #include <QToolBar>
 
+#include "ComponentButton.h"
 #include "LogOutput.h"
 #include "Logging.h"
 #include "Loop.h"
 #include "Node.h"
 #include "Scene.h"
+#include "View.h"
 
 namespace KidTech::IDE {
 auto constexpr WINDOW_SIZE_WIDTH{1100};
@@ -59,15 +59,8 @@ auto MainWindow::initUI() {
 
   // --- Top: Graphics View ---
   mDiagramScene = new Scene(this);
+  mDiagramView = new View(mDiagramScene, this);
 
-  mDiagramView = new QGraphicsView(mDiagramScene, this);
-
-  mDiagramView->setRenderHint(QPainter::Antialiasing);
-  mDiagramView->setRenderHint(QPainter::SmoothPixmapTransform);
-  mDiagramView->setDragMode(QGraphicsView::RubberBandDrag);
-  mDiagramView->setViewportUpdateMode(
-      QGraphicsView::BoundingRectViewportUpdate);
-  mDiagramView->setBackgroundBrush(QColor("#eeebe5"));
   statusBar()->showMessage("Ready");
 
   // --- Bottom: Logs / Output ---
@@ -83,9 +76,6 @@ auto MainWindow::initUI() {
   verticalSplitter->setStretchFactor(1, 1);  // bottom smaller
 
   verticalSplitter->setSizes({WINDOW_SIZE_WIDTH, WINDOW_SIZE_HEIGHT / 3});
-
-  // --- LEFT SIDEBAR ---
-  mSidebar = new QListWidget();
 
   // --- MAIN SPLITTER (LEFT + RIGHT) ---
   auto* mainSplitter = new QSplitter(Qt::Horizontal);
@@ -130,10 +120,23 @@ auto MainWindow::initMenuAndToolbar() {
   connect(runAction, &QAction::triggered, this, &MainWindow::run);
 }
 
+auto MainWindow::initSidebar() {
+  mSidebar = new QToolBar("Components");
+  mSidebar->setOrientation(Qt::Vertical);
+  mSidebar->setMovable(false);
+  mSidebar->setFloatable(false);
+
+  // Add component actions
+  auto* loopButton = new ComponentButton("Loop", mSidebar);
+  loopButton->setText("🔄Loop");
+  mSidebar->addWidget(loopButton);
+}
+
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   setWindowTitle("KindTech IDE");
   resize(WINDOW_SIZE_WIDTH, WINDOW_SIZE_HEIGHT);
 
+  initSidebar();
   initUI();
   initMenuAndToolbar();
 }

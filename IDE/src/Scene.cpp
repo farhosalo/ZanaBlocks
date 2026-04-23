@@ -65,9 +65,17 @@ void Scene::createConnection(NodePort* from, NodePort* to) {
   connection->updatePath();
 }
 
+void Scene::createItemAt(const QString& type, const QPointF& pos) {
+  // TODO: Use a factory pattern or registration system for extensibility
+  if (type.toUpper() == "LOOP") {
+    auto* node = new Node("🔄");
+    node->setPos(pos);
+    addItem(node);
+  }
+}
+
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
   updateConnection(event->scenePos());
-
   QGraphicsScene::mouseMoveEvent(event);
 }
 

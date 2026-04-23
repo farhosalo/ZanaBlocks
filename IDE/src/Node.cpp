@@ -55,7 +55,7 @@ void Node::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
 
   // Label
   painter->setPen(Qt::white);
-  painter->setFont(QFont("Arial", 10, QFont::Bold));
+  painter->setFont(QFont("Arial", 14, QFont::Bold));
   painter->drawText(boundingRect(), Qt::AlignCenter | Qt::TextWordWrap, mLabel);
 }
 void Node::hoverEnterEvent(QGraphicsSceneHoverEvent* event) {

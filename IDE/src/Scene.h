@@ -43,6 +43,14 @@ class Scene : public QGraphicsScene {
    */
   void createConnection(NodePort* from, NodePort* to);
 
+  /**
+   * @brief Creates a new item of the specified type at the given position.
+   * @param type The type of item to create (e.g., "Loop", "Action").
+   * @param pos The position in scene coordinates where the item should be
+   * created.
+   */
+  void createItemAt(const QString& type, const QPointF& pos);
+
  private:
   void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;

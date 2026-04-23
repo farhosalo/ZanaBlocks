@@ -15,6 +15,8 @@ add_library(lib${PROJECT_NAME}
     src/NodeConnector.cpp
     src/Scene.cpp
     src/NodePort.cpp
+    src/View.cpp
+    src/ComponentButton.cpp
 )
 
 target_link_libraries(lib${PROJECT_NAME}
@@ -57,6 +59,8 @@ set (HEADERS
     src/NodePort.h
     src/NodeConnector.h
     src/Scene.h
+    src/View.h
+    src/ComponentButton.h
     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Info.h
 )
 install(FILES ${HEADERS}

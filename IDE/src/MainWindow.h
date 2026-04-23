@@ -3,12 +3,13 @@
 
 #include "ReplClient.h"
 
-class QGraphicsView;
 class QPlainTextEdit;
-class QListWidget;
+class LoopItem;
+class QToolBar;
 
 namespace KidTech::IDE {
 class Scene;
+class View;
 
 class LogOutput;
 
@@ -23,16 +24,17 @@ class MainWindow : public QMainWindow {
  private:
   auto initUI();
   auto initMenuAndToolbar();
+  auto initSidebar();
 
   auto run();
   auto save();
   auto open();
 
-  QGraphicsView* mDiagramView{nullptr};
+  View* mDiagramView{nullptr};
   Scene* mDiagramScene{nullptr};
   LogOutput* mLogOutput{nullptr};
-  QListWidget* mSidebar{nullptr};
-
+  QToolBar* mSidebar{nullptr};
+  LoopItem* mMainLoop{nullptr};
   std::unique_ptr<ReplClient::ReplClient> mReplClient{
       std::make_unique<ReplClient::ReplClient>()};
 };
