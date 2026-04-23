@@ -48,6 +48,13 @@ class Scene : public QGraphicsScene {
   void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
   void keyPressEvent(QKeyEvent* event) override;
 
+  /** @brief Deletes a connection and cleans up its references.
+   * @param conn The connection to delete.
+   */
+  void deleteConnection(NodeConnector* conn);
+  void deleteSelectedNodes();
+  void deleteSelectedConnections();
+
   /** @brief The starting port for the current connection. */
   NodePort* mStartPort = nullptr;
 

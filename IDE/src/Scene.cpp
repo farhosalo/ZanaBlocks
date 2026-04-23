@@ -89,16 +89,36 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
 }
 void Scene::keyPressEvent(QKeyEvent* event) {
   if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace) {
-    for (QGraphicsItem* item : selectedItems()) {
-      if (auto* conn = dynamic_cast<NodeConnector*>(item)) {
-        // Clean up port references first
-        conn->getStartPort()->removeConnection(conn);
-        conn->getEndPort()->removeConnection(conn);
-        removeItem(conn);
-        delete conn;
-      }
-    }
+    deleteSelectedConnections();
+    deleteSelectedNodes();
   }
   QGraphicsScene::keyPressEvent(event);
+}
+void Scene::deleteConnection(NodeConnector* conn) {
+  if (!conn) return;
+  conn->getStartPort()->removeConnection(conn);
+  conn->getEndPort()->removeConnection(conn);
+  removeItem(conn);
+  delete conn;
+}
+void Scene::deleteSelectedNodes() {
+  for (QGraphicsItem* item : selectedItems()) {
+    if (auto* node = dynamic_cast<Node*>(item)) {
+      for (auto* port : node->getPorts()) {
+        for (auto* conn : port->connections()) {
+          deleteConnection(conn);
+        }
+      }
+      removeItem(item);
+      delete item;
+    }
+  }
+}
+void Scene::deleteSelectedConnections() {
+  for (QGraphicsItem* item : selectedItems()) {
+    if (auto* conn = dynamic_cast<NodeConnector*>(item)) {
+      deleteConnection(conn);
+    }
+  }
 }
 }  // namespace KidTech::IDE
