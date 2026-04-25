@@ -13,7 +13,7 @@
 #include "LogOutput.h"
 #include "Logging.h"
 #include "Loop.h"
-#include "Node.h"
+#include "MainLoop.h"
 #include "Scene.h"
 #include "View.h"
 
@@ -139,5 +139,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   initSidebar();
   initUI();
   initMenuAndToolbar();
+
+  // Add main loop node to the scene
+  // TODO: Only if new diagram is created, not when loading an existing one
+  {
+    auto* node = new MainLoop();
+    node->setPos(0, 0);
+    mDiagramScene->addItem(node);
+  }
 }
 }  // namespace KidTech::IDE

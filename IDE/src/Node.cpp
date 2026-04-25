@@ -18,22 +18,6 @@ Node::Node(const QString& label, QGraphicsItem* parent)
 
   setCacheMode(QGraphicsItem::DeviceCoordinateCache);
   setZValue(1);
-
-  // Create input port
-  {
-    auto* port = new NodePort(PortType::SingleConnectorPort, this);
-    port->setPos(this->boundingRect().center().x(), this->boundingRect().top());
-    port->setVisible(false);
-    ports.append(port);
-  }
-  // Create output port
-  {
-    auto* port = new NodePort(PortType::MultiConnectorPort, this);
-    port->setPos(this->boundingRect().center().x(),
-                 this->boundingRect().bottom());
-    port->setVisible(false);
-    ports.append(port);
-  }
 }
 
 QRectF Node::boundingRect() const {
@@ -42,6 +26,7 @@ QRectF Node::boundingRect() const {
 
 void Node::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
                  QWidget* widget) {
+  createPorts();
   const auto selected = option->state & QStyle::State_Selected;
 
   // Shadow
@@ -61,11 +46,11 @@ void Node::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
   painter->drawText(boundingRect(), Qt::AlignCenter | Qt::TextWordWrap, mLabel);
 }
 void Node::hoverEnterEvent(QGraphicsSceneHoverEvent* event) {
-  showPorts(true);
+  showOutputPorts();
   QGraphicsItem::hoverEnterEvent(event);
 }
 void Node::hoverLeaveEvent(QGraphicsSceneHoverEvent* event) {
-  showPorts(false);
+  hidePorts();
   QGraphicsItem::hoverLeaveEvent(event);
 }
 

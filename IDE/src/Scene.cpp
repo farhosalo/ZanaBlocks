@@ -3,7 +3,9 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
 
-#include "Node.h"
+#include "ChildLoop.h"
+#include "MainLoop.h"
+
 namespace KidTech::IDE {
 Scene::Scene(QObject* parent) : QGraphicsScene(parent) {}
 
@@ -79,7 +81,7 @@ void Scene::createConnection(NodePort* from, NodePort* to) {
 void Scene::createItemAt(const QString& type, const QPointF& pos) {
   // TODO: Use a factory pattern or registration system for extensibility
   if (type.toUpper() == "LOOP") {
-    auto* node = new Node("🔄");
+    auto* node = new ChildLoop();
     node->setPos(pos);
     addItem(node);
   }
@@ -122,6 +124,11 @@ void Scene::deleteConnection(NodeConnector* conn) {
 }
 void Scene::deleteSelectedNodes() {
   for (QGraphicsItem* item : selectedItems()) {
+    if (auto* node = dynamic_cast<MainLoop*>(item)) {
+      (void)node;
+      // Don't delete the main loop node
+      continue;
+    }
     if (auto* node = dynamic_cast<Node*>(item)) {
       for (auto* port : node->getPorts()) {
         for (auto* conn : port->connections()) {

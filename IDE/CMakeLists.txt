@@ -61,6 +61,8 @@ set (HEADERS
     src/Scene.h
     src/View.h
     src/ComponentButton.h
+    src/MainLoop.h
+    src/ChildLoop.h
     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Info.h
 )
 install(FILES ${HEADERS}

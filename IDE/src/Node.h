@@ -54,19 +54,26 @@ class Node : public QGraphicsItem {
    */
   const QList<NodePort*>& getPorts() const { return ports; }
 
- private:
+ protected:
+  /**
+   * @brief Creates the ports for the node. This is a pure virtual function
+   * that must be implemented by derived classes to define their specific
+   * port configurations.
+   */
+  virtual void createPorts() = 0;
   QVariant itemChange(const GraphicsItemChange change,
                       const QVariant& value) override;
   void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
   void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
 
-  /* Node properties */
-  QColor mColor{QColor(100, 150, 240)};
+  /** @brief The list of ports associated with the node. */
+  QList<NodePort*> ports;
 
+ private:
   /** @brief The label for the node. */
   QString mLabel{"Node"};
 
-  /** @brief The list of ports associated with the node. */
-  QList<NodePort*> ports;
+  /* Node properties */
+  QColor mColor{QColor(100, 150, 240)};
 };
 }  // namespace KidTech::IDE
