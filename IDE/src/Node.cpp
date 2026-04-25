@@ -19,14 +19,16 @@ Node::Node(const QString& label, QGraphicsItem* parent)
   setCacheMode(QGraphicsItem::DeviceCoordinateCache);
   setZValue(1);
 
+  // Create input port
   {
-    auto* port = new NodePort(this);
+    auto* port = new NodePort(PortType::SingleConnectorPort, this);
     port->setPos(this->boundingRect().center().x(), this->boundingRect().top());
     port->setVisible(false);
     ports.append(port);
   }
+  // Create output port
   {
-    auto* port = new NodePort(this);
+    auto* port = new NodePort(PortType::MultiConnectorPort, this);
     port->setPos(this->boundingRect().center().x(),
                  this->boundingRect().bottom());
     port->setVisible(false);
@@ -71,9 +73,27 @@ void Node::hoverLeaveEvent(QGraphicsSceneHoverEvent* event) {
 // hidden, and only the compatible ports should be shown when dragging a
 // connection.
 
-void Node::showPorts(bool visible) {
+void Node::hidePorts() {
   for (auto* port : ports) {
-    port->setVisible(visible);
+    port->setVisible(false);
+  }
+}
+
+void Node::showInputPorts() {
+  for (auto* port : ports) {
+    if (port->getType() == PortType::Input && port->connections().isEmpty()) {
+      port->setVisible(true);
+    }
+  }
+}
+
+void Node::showOutputPorts() {
+  for (auto* port : ports) {
+    if (port->getType() == PortType::MultiOutput ||
+        (port->getType() == PortType::SingleOutput &&
+         port->connections().isEmpty())) {
+      port->setVisible(true);
+    }
   }
 }
 

@@ -34,10 +34,19 @@ class Node : public QGraphicsItem {
              QWidget* widget) override;
 
   /**
-   * @brief Shows or hides the node's ports.
-   * @param visible Whether the ports should be visible.
+   * @brief Hides all ports of the node.
    */
-  void showPorts(bool visible);
+  void hidePorts();
+
+  /**
+   * @brief Shows only the input ports of the node.
+   */
+  void showInputPorts();
+
+  /**
+   * @brief Shows only the output ports of the node.
+   */
+  void showOutputPorts();
 
   /**
    * @brief Returns the list of ports associated with this node.

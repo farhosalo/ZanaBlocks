@@ -15,7 +15,9 @@ void Scene::beginConnection(NodePort* port) {
 
   // Make all ports hittable during drag
   for (QGraphicsItem* item : items()) {
-    if (auto* node = dynamic_cast<Node*>(item)) node->showPorts(true);
+    if (auto* node = dynamic_cast<Node*>(item)) {
+      node->showInputPorts();
+    }
   }
 }
 void Scene::updateConnection(QPointF pos) {
@@ -37,7 +39,9 @@ void Scene::endConnection(NodePort* targetPort) {
 
   // Hide ports again
   for (QGraphicsItem* item : items()) {
-    if (auto* node = dynamic_cast<Node*>(item)) node->showPorts(false);
+    if (auto* node = dynamic_cast<Node*>(item)) {
+      node->hidePorts();
+    }
   }
 }
 
@@ -55,6 +59,13 @@ void Scene::createConnection(NodePort* from, NodePort* to) {
                             ? conn->getEndPort()->parentNode()
                             : conn->getStartPort()->parentNode();
       if (otherNode == toNode) return;
+    }
+  }
+
+  for (auto* port : toNode->getPorts()) {
+    if (port->getType() == PortType::Input && !port->connections().isEmpty()) {
+      return;  // Target node already has a connection to a single-connector
+               // port
     }
   }
 

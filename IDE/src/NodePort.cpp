@@ -4,8 +4,8 @@
 #include "Scene.h"
 
 namespace KidTech::IDE {
-NodePort::NodePort(QGraphicsItem* parent)
-    : QGraphicsEllipseItem(-5, -5, 10, 10, parent) {
+NodePort::NodePort(PortType type, QGraphicsItem* parent)
+    : QGraphicsEllipseItem(-5, -5, 10, 10, parent), mType(type) {
   setBrush(Qt::darkGray);
   setAcceptHoverEvents(true);
   setFlag(ItemSendsScenePositionChanges);

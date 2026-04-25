@@ -8,10 +8,14 @@ namespace KidTech::IDE {
 class Scene;
 class Node;
 
-enum class PortType { Input, Output };
-
-// TODO: Use 2 separate classes for input and output ports, to enforce
-// connection rules at compile time
+/**
+ * @brief Represents a port on a node that can be connected to other ports.
+ */
+enum class PortType : uint8_t {
+  Input,         ///< Single-connector input port (only one connection allowed)
+  SingleOutput,  ///< Single-connector output port (only one connection allowed)
+  MultiOutput    ///< Multi-connector output port (multiple connections allowed)
+};
 
 /**
  * @brief Represents a port on a node that can be connected to other ports. The
@@ -20,7 +24,7 @@ enum class PortType { Input, Output };
  */
 class NodePort : public QGraphicsEllipseItem {
  public:
-  NodePort(QGraphicsItem* parent = nullptr);
+  NodePort(PortType type, QGraphicsItem* parent = nullptr);
   ~NodePort() override = default;
 
   /**
@@ -47,12 +51,23 @@ class NodePort : public QGraphicsEllipseItem {
    */
   Node* parentNode() const;
 
- private:
+  /**
+   * @brief Returns the type of this port (SingleConnectorPort or
+   * MultiConnectorPort).
+   * @return The type of this port.
+   */
+  PortType getType() const { return mType; }
+
+ protected:
   void hoverEnterEvent(QGraphicsSceneHoverEvent*) override;
   void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
   void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
 
   /** @brief The list of connections associated with this port. */
   QList<NodeConnector*> mConnections;
+
+  /** @brief The type of this port (SingleConnectorPort or MultiConnectorPort).
+   */
+  PortType mType;
 };
 }  // namespace KidTech::IDE
