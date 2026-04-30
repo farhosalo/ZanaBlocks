@@ -9,27 +9,20 @@ namespace KidTech::IDE {
  */
 class MainLoop : public Node {
  public:
-  explicit MainLoop(QGraphicsItem* parent = nullptr) : Node("🔄", parent) {
-    createPorts();
-  }
+  explicit MainLoop(QGraphicsItem* parent = nullptr);
 
+  /**
+   * @see Node::getNodeType
+   */
+  NodeType getNodeType() const override { return NodeType::MainLoop; }
+
+ private:
   /**
    * @brief Creates the ports for the main loop node. This includes one
    * multi-output port at the bottom. Main loop has no input ports, as it is the
    * entry point of the program. The port is initially hidden and can be shown
    * when needed.
    */
-  void createPorts() override {
-    auto* port = new NodePort(PortType::MultiOutput, this);
-    port->setPos(this->boundingRect().center().x(),
-                 this->boundingRect().bottom());
-    port->setVisible(false);
-    ports.append(port);
-  }
-
-  /**
-   * @see Node::getNodeType
-   */
-  NodeType getNodeType() const override { return NodeType::MainLoop; }
+  void createPorts() override;
 };
 }  // namespace KidTech::IDE

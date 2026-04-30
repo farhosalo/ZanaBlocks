@@ -18,6 +18,7 @@ add_library(lib${PROJECT_NAME}
     src/View.cpp
     src/ComponentButton.cpp
     src/ChildLoop.cpp
+    src/MainLoop.cpp
     src/Print.cpp
 )
 
@@ -66,6 +67,7 @@ set (HEADERS
     src/ComponentButton.h
     src/MainLoop.h
     src/ChildLoop.h
+    src/MainLoop.h
     src/Print.h
 )
 install(FILES ${HEADERS}
