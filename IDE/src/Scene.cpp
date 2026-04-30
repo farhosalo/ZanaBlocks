@@ -4,7 +4,7 @@
 #include <QKeyEvent>
 
 #include "LoopNode.h"
-
+#include "PrintNode.h"
 namespace KidTech::IDE {
 Scene::Scene(QObject* parent) : QGraphicsScene(parent) {}
 
@@ -80,11 +80,11 @@ void Scene::createConnection(NodePort* from, NodePort* to) {
 void Scene::createItemAt(const QString& type, const QPointF& pos) {
   // TODO: Use a factory pattern or registration system for extensibility
   if (type.toUpper() == "LOOP") {
-    auto* node = new ChildLoop();
+    auto* node = new LoopNode();
     node->setPos(pos);
     addItem(node);
   } else if (type.toUpper() == "PRINT") {
-    auto* node = new Print();
+    auto* node = new PrintNode();
     node->setPos(pos);
     addItem(node);
   }

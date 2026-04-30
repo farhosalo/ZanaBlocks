@@ -1,9 +1,12 @@
-#include "Print.h"
+#include "PrintNode.h"
 
 namespace KidTech::IDE {
 
-Print::Print(QGraphicsItem* parent) : Node("🖨️", parent) { createPorts(); }
-void Print::createPorts() {
+PrintNode::PrintNode(const std::string& message, QGraphicsItem* parent)
+    : Node("🖨️", parent), mMessage(message) {
+  createPorts();
+}
+void PrintNode::createPorts() {
   auto* port = new NodePort(PortType::Input, this);
   port->setPos(this->boundingRect().center().x(), this->boundingRect().top());
   port->setVisible(false);
