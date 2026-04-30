@@ -34,5 +34,9 @@ class ChildLoop : public Node {
       ports.append(port);
     }
   }
+  /**
+   *@see Node::getNodeType
+   */
+  NodeType getNodeType() const override { return NodeType::ChildLoop; }
 };
 }  // namespace KidTech::IDE

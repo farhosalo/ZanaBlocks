@@ -27,5 +27,10 @@ class MainLoop : public Node {
     port->setVisible(false);
     ports.append(port);
   }
+
+  /**
+   * @see Node::getNodeType
+   */
+  NodeType getNodeType() const override { return NodeType::MainLoop; }
 };
 }  // namespace KidTech::IDE
