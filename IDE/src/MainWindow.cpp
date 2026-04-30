@@ -12,8 +12,7 @@
 #include "ComponentButton.h"
 #include "LogOutput.h"
 #include "Logging.h"
-#include "Loop.h"
-#include "MainLoop.h"
+#include "LoopNode.h"
 #include "Scene.h"
 #include "View.h"
 
@@ -147,7 +146,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   // Add main loop node to the scene
   // TODO: Only if new diagram is created, not when loading an existing one
   {
-    auto* node = new MainLoop();
+    auto* node = new LoopNode(true);
     node->setPos(0, 0);
     mDiagramScene->addItem(node);
   }

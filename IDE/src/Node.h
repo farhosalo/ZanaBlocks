@@ -6,13 +6,6 @@
 
 namespace KidTech::IDE {
 
-enum class NodeType {
-  MainLoop,
-  ChildLoop,
-  Print,
-  Sleep,
-};
-
 /**
  * @brief Represents a node in the visual programming diagram. Each node can
  * have input and output ports for connecting to other nodes. The
@@ -60,12 +53,6 @@ class Node : public QGraphicsItem {
    * @return The list of ports.
    */
   const QList<NodePort*>& getPorts() const { return ports; }
-
-  /**
-   * @brief Returns the type of the node.
-   * @return The node type.
-   */
-  virtual NodeType getNodeType() const = 0;
 
  protected:
   /**

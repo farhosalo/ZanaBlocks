@@ -1,13 +1,14 @@
-#include "ChildLoop.h"
+#include "LoopNode.h"
 
 namespace KidTech::IDE {
-ChildLoop::ChildLoop(QGraphicsItem* parent) : Node("🔄", parent) {
+LoopNode::LoopNode(bool isMainLoop, QGraphicsItem* parent)
+    : Node("🔄", parent), mIsMainLoop(isMainLoop) {
   createPorts();
 }
 
-void ChildLoop::createPorts() {
+void LoopNode::createPorts() {
   // Create input port
-  {
+  if (!mIsMainLoop) {
     auto* port = new NodePort(PortType::Input, this);
     port->setPos(this->boundingRect().center().x(), this->boundingRect().top());
     port->setVisible(false);

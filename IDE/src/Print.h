@@ -10,11 +10,6 @@ class Print : public Node {
  public:
   explicit Print(QGraphicsItem* parent = nullptr);
 
-  /**
-   * @see Node::getNodeType
-   */
-  NodeType getNodeType() const override { return NodeType::Print; }
-
  private:
   void createPorts() override;
 };

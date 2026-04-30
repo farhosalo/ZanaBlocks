@@ -17,8 +17,7 @@ add_library(lib${PROJECT_NAME}
     src/NodePort.cpp
     src/View.cpp
     src/ComponentButton.cpp
-    src/ChildLoop.cpp
-    src/MainLoop.cpp
+    src/LoopNode.cpp
     src/Print.cpp
 )
 
@@ -65,9 +64,7 @@ set (HEADERS
     src/Scene.h
     src/View.h
     src/ComponentButton.h
-    src/MainLoop.h
-    src/ChildLoop.h
-    src/MainLoop.h
+    src/LoopNode.h
     src/Print.h
 )
 install(FILES ${HEADERS}
