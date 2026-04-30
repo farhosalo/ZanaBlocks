@@ -128,8 +128,12 @@ auto MainWindow::initSidebar() {
 
   // Add component actions
   auto* loopButton = new ComponentButton("Loop", mSidebar);
-  loopButton->setText("🔄Loop");
+  loopButton->setText("🔄 Loop");
   mSidebar->addWidget(loopButton);
+
+  auto* printButton = new ComponentButton("Print", mSidebar);
+  printButton->setText("🖨️ Print");
+  mSidebar->addWidget(printButton);
 }
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {

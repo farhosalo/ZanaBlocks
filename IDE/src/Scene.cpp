@@ -84,6 +84,10 @@ void Scene::createItemAt(const QString& type, const QPointF& pos) {
     auto* node = new ChildLoop();
     node->setPos(pos);
     addItem(node);
+  } else if (type.toUpper() == "PRINT") {
+    auto* node = new Print();
+    node->setPos(pos);
+    addItem(node);
   }
 }
 
