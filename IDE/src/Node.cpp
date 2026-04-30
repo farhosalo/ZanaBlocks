@@ -35,11 +35,7 @@ void Node::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
 
   // Body
   QColor fill;
-  if (getNodeType() == NodeType::MainLoop) {
-    fill = selected ? mColor.darker(130) : mColor.darker(240);
-  } else {
-    fill = selected ? mColor.lighter(130) : mColor;
-  }
+  fill = selected ? mColor.lighter(130) : mColor;
   painter->setBrush(fill);
   painter->setPen(QPen(fill.darker(140), selected ? 2.5 : 1.5));
   painter->drawRoundedRect(boundingRect(), 8, 8);
