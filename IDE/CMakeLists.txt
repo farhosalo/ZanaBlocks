@@ -18,6 +18,7 @@ add_library(lib${PROJECT_NAME}
     src/View.cpp
     src/ComponentButton.cpp
     src/ChildLoop.cpp
+    src/Print.cpp
 )
 
 target_link_libraries(lib${PROJECT_NAME}
@@ -53,6 +54,7 @@ install(TARGETS ${PROJECT_NAME} DESTINATION ${INSTALL_DIR}/bin)
 
 # Install headers
 set (HEADERS
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Info.h
     src/MainWindow.h
     src/ReplClient.h
     src/LogOutput.h
@@ -64,7 +66,7 @@ set (HEADERS
     src/ComponentButton.h
     src/MainLoop.h
     src/ChildLoop.h
-    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Info.h
+    src/Print.h
 )
 install(FILES ${HEADERS}
     DESTINATION ${INSTALL_DIR}/include/${PROJECT_NAME}
