@@ -2,7 +2,7 @@
 
 namespace KidTech::IDE {
 
-Print::Print(QGraphicsItem* parent) : Node("Print", parent) {}
+Print::Print(QGraphicsItem* parent) : Node("🖨️", parent) { createPorts(); }
 void Print::createPorts() {
   auto* port = new NodePort(PortType::Input, this);
   port->setPos(this->boundingRect().center().x(), this->boundingRect().top());

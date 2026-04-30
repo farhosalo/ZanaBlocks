@@ -9,8 +9,7 @@ namespace KidTech::IDE {
  */
 class MainLoop : public Node {
  public:
-  explicit MainLoop(QGraphicsItem* parent = nullptr)
-      : Node("Main Loop", parent) {
+  explicit MainLoop(QGraphicsItem* parent = nullptr) : Node("🔄", parent) {
     createPorts();
   }
 

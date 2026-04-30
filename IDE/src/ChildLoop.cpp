@@ -1,7 +1,7 @@
 #include "ChildLoop.h"
 
 namespace KidTech::IDE {
-ChildLoop::ChildLoop(QGraphicsItem* parent) : Node("Child Loop", parent) {
+ChildLoop::ChildLoop(QGraphicsItem* parent) : Node("🔄", parent) {
   createPorts();
 }
 

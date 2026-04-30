@@ -34,14 +34,19 @@ void Node::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
   painter->drawRoundedRect(boundingRect().translated(3, 3), 8, 8);
 
   // Body
-  QColor fill = selected ? mColor.lighter(130) : mColor;
+  QColor fill;
+  if (getNodeType() == NodeType::MainLoop) {
+    fill = selected ? mColor.darker(130) : mColor.darker(240);
+  } else {
+    fill = selected ? mColor.lighter(130) : mColor;
+  }
   painter->setBrush(fill);
   painter->setPen(QPen(fill.darker(140), selected ? 2.5 : 1.5));
   painter->drawRoundedRect(boundingRect(), 8, 8);
 
   // Label
   painter->setPen(Qt::white);
-  painter->setFont(QFont("Arial", 14, QFont::Bold));
+  painter->setFont(QFont("Arial", 18, QFont::Bold));
   painter->drawText(boundingRect(), Qt::AlignCenter | Qt::TextWordWrap, mLabel);
 }
 void Node::hoverEnterEvent(QGraphicsSceneHoverEvent* event) {
