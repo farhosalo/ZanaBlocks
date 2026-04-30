@@ -1,42 +1,31 @@
 #pragma once
 #include "Node.h"
 
-namespace KidTech::IDE {
+namespace KidTech {
+
+namespace Schema {
+class Loop;
+}
+
+namespace IDE {
 
 /**
  * @brief Represents a child loop node in the visual programming diagram.
  */
 class ChildLoop : public Node {
  public:
-  explicit ChildLoop(QGraphicsItem* parent = nullptr)
-      : Node("Child Loop", parent) {}
+  explicit ChildLoop(QGraphicsItem* parent = nullptr);
 
   /**
    * @brief Creates the ports for the child loop node. This includes one input
    * port at the top and one multi-output port at the bottom. Both ports are
    * initially hidden and can be shown when needed.
    */
-  void createPorts() override {
-    // Create input port
-    {
-      auto* port = new NodePort(PortType::Input, this);
-      port->setPos(this->boundingRect().center().x(),
-                   this->boundingRect().top());
-      port->setVisible(false);
-      ports.append(port);
-    }
-    // Create output port
-    {
-      auto* port = new NodePort(PortType::MultiOutput, this);
-      port->setPos(this->boundingRect().center().x(),
-                   this->boundingRect().bottom());
-      port->setVisible(false);
-      ports.append(port);
-    }
-  }
+  void createPorts() override;
   /**
    *@see Node::getNodeType
    */
   NodeType getNodeType() const override { return NodeType::ChildLoop; }
 };
-}  // namespace KidTech::IDE
+}  // namespace IDE
+}  // namespace KidTech

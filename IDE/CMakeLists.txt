@@ -17,6 +17,7 @@ add_library(lib${PROJECT_NAME}
     src/NodePort.cpp
     src/View.cpp
     src/ComponentButton.cpp
+    src/ChildLoop.cpp
 )
 
 target_link_libraries(lib${PROJECT_NAME}
