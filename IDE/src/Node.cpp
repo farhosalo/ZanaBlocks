@@ -26,7 +26,6 @@ QRectF Node::boundingRect() const {
 
 void Node::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
                  QWidget* widget) {
-  createPorts();
   const auto selected = option->state & QStyle::State_Selected;
 
   // Shadow

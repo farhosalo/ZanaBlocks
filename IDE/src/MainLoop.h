@@ -10,7 +10,9 @@ namespace KidTech::IDE {
 class MainLoop : public Node {
  public:
   explicit MainLoop(QGraphicsItem* parent = nullptr)
-      : Node("Main Loop", parent) {}
+      : Node("Main Loop", parent) {
+    createPorts();
+  }
 
   /**
    * @brief Creates the ports for the main loop node. This includes one

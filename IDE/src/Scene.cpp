@@ -34,7 +34,7 @@ void Scene::endConnection(NodePort* targetPort) {
   mTempConnection = nullptr;
 
   if (mStartPort && targetPort) {
-    createConnection(mStartPort, targetPort);  // ← uncomment this
+    createConnection(mStartPort, targetPort);
   }
 
   mStartPort = nullptr;
