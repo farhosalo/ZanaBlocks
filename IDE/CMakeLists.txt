@@ -19,6 +19,7 @@ add_library(lib${PROJECT_NAME}
     src/ComponentButton.cpp
     src/LoopNode.cpp
     src/PrintNode.cpp
+    src/SleepNode.cpp
 )
 
 target_link_libraries(lib${PROJECT_NAME}
@@ -66,6 +67,7 @@ set (HEADERS
     src/ComponentButton.h
     src/LoopNode.h
     src/PrintNode.h
+    src/SleepNode.h
 )
 install(FILES ${HEADERS}
     DESTINATION ${INSTALL_DIR}/include/${PROJECT_NAME}

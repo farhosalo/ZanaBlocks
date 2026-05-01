@@ -4,6 +4,7 @@
 #include <QKeyEvent>
 
 #include "LoopNode.h"
+#include "SleepNode.h"
 #include "PrintNode.h"
 namespace KidTech::IDE {
 Scene::Scene(QObject* parent) : QGraphicsScene(parent) {}
@@ -87,7 +88,12 @@ void Scene::createItemAt(const QString& type, const QPointF& pos) {
     auto* node = new PrintNode();
     node->setPos(pos);
     addItem(node);
+  } else if (type.toUpper() == "SLEEP") {
+    auto* node = new SleepNode();
+    node->setPos(pos);
+    addItem(node);
   }
+}
 }
 
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {

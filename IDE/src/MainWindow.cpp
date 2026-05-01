@@ -133,6 +133,10 @@ auto MainWindow::initSidebar() {
   auto* printButton = new ComponentButton("Print", mSidebar);
   printButton->setText("🖨️ Print");
   mSidebar->addWidget(printButton);
+
+  auto* sleepButton = new ComponentButton("Sleep", mSidebar);
+  sleepButton->setText("⏰ Sleep");
+  mSidebar->addWidget(sleepButton);
 }
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {

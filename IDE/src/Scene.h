@@ -6,7 +6,13 @@
 
 // TODO:     Undo/redo (QUndoStack)
 
-namespace KidTech::IDE {
+namespace KidTech {
+namespace IDE {
+
+class MainLoop;
+class LoopNode;
+class PrintNode;
+class SleepNode;
 
 /**
  * @brief Custom QGraphicsScene to manage node connections and interactions in
@@ -69,4 +75,5 @@ class Scene : public QGraphicsScene {
   /** @brief The temporary connection line during dragging. */
   QGraphicsPathItem* mTempConnection = nullptr;
 };
-}  // namespace KidTech::IDE
+}  // namespace IDE
+}  // namespace KidTech
