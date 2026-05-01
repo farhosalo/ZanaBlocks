@@ -19,6 +19,7 @@ Node::Node(const QString& label, QGraphicsItem* parent)
   setCacheMode(QGraphicsItem::DeviceCoordinateCache);
   setZValue(1);
 }
+Node::~Node() {}
 
 QRectF Node::boundingRect() const {
   return QRectF(-Width / 2, -Height / 2, Width, Height);
@@ -54,9 +55,28 @@ void Node::hoverLeaveEvent(QGraphicsSceneHoverEvent* event) {
   QGraphicsItem::hoverLeaveEvent(event);
 }
 
-// TODO: only valid ports should be shown. The already connected ports should be
-// hidden, and only the compatible ports should be shown when dragging a
-// connection.
+void Node::addInputPort() {
+  auto* port = new NodePort(PortType::Input, this);
+  port->setPos(this->boundingRect().center().x(), this->boundingRect().top());
+  port->setVisible(false);
+  ports.append(port);
+}
+
+void Node::addSingleOutputPort() {
+  auto* port = new NodePort(PortType::SingleOutput, this);
+  port->setPos(this->boundingRect().center().x(),
+               this->boundingRect().bottom());
+  port->setVisible(false);
+  ports.append(port);
+}
+
+void Node::addMultiOutputPort() {
+  auto* port = new NodePort(PortType::MultiOutput, this);
+  port->setPos(this->boundingRect().center().x(),
+               this->boundingRect().bottom());
+  port->setVisible(false);
+  ports.append(port);
+}
 
 void Node::hidePorts() {
   for (auto* port : ports) {

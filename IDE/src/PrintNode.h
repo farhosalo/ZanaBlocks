@@ -24,8 +24,6 @@ class PrintNode : public Node {
   void setMessage(const std::string& message) { mMessage = message; }
 
  private:
-  void createPorts() override;
-
   std::string mMessage;
 };
 }  // namespace KidTech::IDE

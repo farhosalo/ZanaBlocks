@@ -24,8 +24,6 @@ class SleepNode : public Node {
   void setSleepTime(const uint32_t sleepTime) { mSleepTime = sleepTime; }
 
  private:
-  void createPorts() override;
-
   uint32_t mSleepTime;
 };
 }  // namespace KidTech::IDE

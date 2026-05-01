@@ -16,7 +16,7 @@ namespace KidTech::IDE {
 class Node : public QGraphicsItem {
  public:
   Node(const QString& label, QGraphicsItem* parent = nullptr);
-  ~Node() override = default;
+  ~Node() override = 0;
 
   /**
    * @brief Returns the bounding rectangle of the node.
@@ -55,16 +55,14 @@ class Node : public QGraphicsItem {
   const QList<NodePort*>& getPorts() const { return ports; }
 
  protected:
-  /**
-   * @brief Creates the ports for the node. This is a pure virtual function
-   * that must be implemented by derived classes to define their specific
-   * port configurations.
-   */
-  virtual void createPorts() = 0;
   QVariant itemChange(const GraphicsItemChange change,
                       const QVariant& value) override;
   void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
   void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+
+  void addInputPort();
+  void addSingleOutputPort();
+  void addMultiOutputPort();
 
   /** @brief The list of ports associated with the node. */
   QList<NodePort*> ports;
