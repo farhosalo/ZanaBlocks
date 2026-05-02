@@ -13,6 +13,7 @@ class MainLoop;
 class LoopNode;
 class PrintNode;
 class SleepNode;
+class LedNode;
 
 /**
  * @brief Custom QGraphicsScene to manage node connections and interactions in

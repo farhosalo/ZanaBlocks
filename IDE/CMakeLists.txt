@@ -20,6 +20,7 @@ add_library(lib${PROJECT_NAME}
     src/LoopNode.cpp
     src/PrintNode.cpp
     src/SleepNode.cpp
+    src/LedNode.cpp 
 )
 
 target_link_libraries(lib${PROJECT_NAME}
@@ -68,6 +69,7 @@ set (HEADERS
     src/LoopNode.h
     src/PrintNode.h
     src/SleepNode.h
+    src/LedNode.h
 )
 install(FILES ${HEADERS}
     DESTINATION ${INSTALL_DIR}/include/${PROJECT_NAME}

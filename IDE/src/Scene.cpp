@@ -3,7 +3,9 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
 
+#include "LedNode.h"
 #include "LoopNode.h"
+#include "PrintNode.h"
 #include "SleepNode.h"
 #include "PrintNode.h"
 namespace KidTech::IDE {
@@ -92,8 +94,11 @@ void Scene::createItemAt(const QString& type, const QPointF& pos) {
     auto* node = new SleepNode();
     node->setPos(pos);
     addItem(node);
+  } else if (type.toUpper() == "LED") {
+    auto* node = new LedNode();
+    node->setPos(pos);
+    addItem(node);
   }
-}
 }
 
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {

@@ -137,6 +137,10 @@ auto MainWindow::initSidebar() {
   auto* sleepButton = new ComponentButton("Sleep", mSidebar);
   sleepButton->setText("⏰ Sleep");
   mSidebar->addWidget(sleepButton);
+
+  auto* ledButton = new ComponentButton("LED", mSidebar);
+  ledButton->setText("💡 LED");
+  mSidebar->addWidget(ledButton);
 }
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
