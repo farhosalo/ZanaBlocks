@@ -22,6 +22,14 @@ class LedNode : public Node {
    */
   void setState(const bool state) { mState = state; }
 
+  /**
+   * \see Node::getDescription
+   */
+  std::string_view getDescription() const override {
+    return "A control node that allows you to turn an LED on or off by setting "
+           "its state. The pin to which the LED is connected is determined by "
+           "the pin field and the state is determined by the state field.";
+  }
  private:
   bool mState;
 };

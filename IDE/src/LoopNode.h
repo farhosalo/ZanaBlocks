@@ -34,6 +34,16 @@ class LoopNode : public Node {
    */
   void setIterations(const uint32_t iterations) { mIterations = iterations; }
 
+  /**
+   * \see Node::getDescription
+   */
+  std::string_view getDescription() const override {
+    return "A control node that enables you to repeat child nodes a specified "
+           "number of times.The number of repetitions is determined by the "
+           "count field. If the count field is set to 0, the loop will repeat "
+           "forever.";
+  }
+
  private:
   bool mIsMainLoop{false};
   uint32_t mIterations{0};

@@ -19,7 +19,6 @@ Node::Node(const QString& label, QGraphicsItem* parent)
   setCacheMode(QGraphicsItem::DeviceCoordinateCache);
   setZValue(1);
 }
-Node::~Node() {}
 
 QRectF Node::boundingRect() const {
   return QRectF(-Width / 2, -Height / 2, Width, Height);
@@ -76,6 +75,12 @@ void Node::addMultiOutputPort() {
                this->boundingRect().bottom());
   port->setVisible(false);
   ports.append(port);
+}
+
+void Node::addHint() {
+  QString hint =
+      QString::fromUtf8(getDescription().data(), getDescription().size());
+  setToolTip("<div style='max-width:500px;'>" + hint + "</div>");
 }
 
 void Node::hidePorts() {

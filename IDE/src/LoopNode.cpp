@@ -7,5 +7,6 @@ LoopNode::LoopNode(bool isMainLoop, QGraphicsItem* parent)
     addInputPort();
   }
   addMultiOutputPort();
+  addHint();
 }
 }  // namespace KidTech::IDE

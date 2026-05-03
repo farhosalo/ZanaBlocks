@@ -23,6 +23,14 @@ class SleepNode : public Node {
    */
   void setSleepTime(const uint32_t sleepTime) { mSleepTime = sleepTime; }
 
+  /**
+   * \see Node::getDescription
+   */
+  std::string_view getDescription() const override {
+    return "A control node that pauses the execution of the program for a "
+           "specified duration in milliseconds.";
+  }
+
  private:
   uint32_t mSleepTime;
 };
