@@ -1,12 +1,13 @@
 #pragma once
 
-#include "Node.h"
+#include "BaseNodeSchema.h"
+#include "Schema.pb.h"
 
 namespace KidTech::IDE {
 /**
  * @brief Represents the sleep node on visual programming diagram.
  */
-class SleepNode : public Node {
+class SleepNode : public BaseNodeSchema<Schema::Sleep> {
  public:
   explicit SleepNode(const uint32_t sleepTime = 0,
                      QGraphicsItem* parent = nullptr);

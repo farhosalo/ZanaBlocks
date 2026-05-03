@@ -1,12 +1,13 @@
 #pragma once
 
-#include "Node.h"
+#include "BaseNodeSchema.h"
+#include "Schema.pb.h"
 
 namespace KidTech::IDE {
 /**
  * @brief Represents the print node in the visual programming diagram.
  */
-class PrintNode : public Node {
+class PrintNode : public BaseNodeSchema<Schema::Print> {
  public:
   explicit PrintNode(const std::string& message = "",
                      QGraphicsItem* parent = nullptr);

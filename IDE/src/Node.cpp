@@ -4,6 +4,7 @@
 #include <QStyleOptionGraphicsItem>
 
 #include "NodePort.h"
+#include "NodeSettings.h"
 
 namespace KidTech::IDE {
 auto constexpr Width{120.0};
@@ -52,6 +53,13 @@ void Node::hoverEnterEvent(QGraphicsSceneHoverEvent* event) {
 void Node::hoverLeaveEvent(QGraphicsSceneHoverEvent* event) {
   hidePorts();
   QGraphicsItem::hoverLeaveEvent(event);
+}
+
+void Node::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) {
+  NodeSettings dialog(getDescription(), schema());
+  if (dialog.exec() == QDialog::Accepted) onSchemaChanged();
+
+  QGraphicsItem::mouseDoubleClickEvent(event);
 }
 
 void Node::addInputPort() {

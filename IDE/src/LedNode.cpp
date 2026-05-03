@@ -3,7 +3,7 @@
 namespace KidTech::IDE {
 
 LedNode::LedNode(const bool state, QGraphicsItem* parent)
-    : Node("💡", parent), mState(state) {
+    : BaseNodeSchema<Schema::LED>("💡", parent), mState(state) {
   addInputPort();
   addHint();
 }

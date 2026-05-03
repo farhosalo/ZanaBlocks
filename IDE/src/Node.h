@@ -1,5 +1,7 @@
 #pragma once
 
+#include <google/protobuf/message.h>
+
 #include <QGraphicsItem>
 
 #include "NodePort.h"
@@ -54,6 +56,18 @@ class Node : public QGraphicsItem {
    */
   const QList<NodePort*>& getPorts() const { return ports; }
 
+  /** @brief Returns the protobuf message schema associated
+   *            with this node.
+   * @return A reference to the protobuf message.*
+   */
+  virtual google::protobuf::Message& schema() = 0;
+
+  /** @brief Returns the protobuf message schema associated
+   *            with this node (const version).
+   * @return A const reference to the protobuf message.
+   */
+  virtual const google::protobuf::Message& schema() const = 0;
+
   /**
    * @brief Returns the description of the node.
    * @return The description.
@@ -65,6 +79,9 @@ class Node : public QGraphicsItem {
                       const QVariant& value) override;
   void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
   void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+  void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) override;
+
+  virtual void onSchemaChanged() { update(); }
 
   void addInputPort();
   void addSingleOutputPort();

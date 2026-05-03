@@ -1,12 +1,13 @@
 #pragma once
 
-#include "Node.h"
+#include "BaseNodeSchema.h"
+#include "Schema.pb.h"
 
 namespace KidTech::IDE {
 /**
  * @brief Represents the LED node on visual programming diagram.
  */
-class LedNode : public Node {
+class LedNode : public BaseNodeSchema<Schema::LED> {
  public:
   explicit LedNode(const bool state = false, QGraphicsItem* parent = nullptr);
 
@@ -30,6 +31,7 @@ class LedNode : public Node {
            "its state. The pin to which the LED is connected is determined by "
            "the pin field and the state is determined by the state field.";
   }
+
  private:
   bool mState;
 };

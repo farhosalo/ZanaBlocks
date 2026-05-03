@@ -1,18 +1,15 @@
 #pragma once
-#include "Node.h"
+#include "BaseNodeSchema.h"
+#include "Schema.pb.h"
 
 namespace KidTech {
-
-namespace Schema {
-class Loop;
-}
 
 namespace IDE {
 
 /**
  * @brief Represents a child loop node in the visual programming diagram.
  */
-class LoopNode : public Node {
+class LoopNode : public BaseNodeSchema<Schema::Loop> {
  public:
   explicit LoopNode(bool isMainLoop = false, QGraphicsItem* parent = nullptr);
 

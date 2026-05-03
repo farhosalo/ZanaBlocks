@@ -3,7 +3,7 @@
 namespace KidTech::IDE {
 
 PrintNode::PrintNode(const std::string& message, QGraphicsItem* parent)
-    : Node("🖨️", parent), mMessage(message) {
+    : BaseNodeSchema<Schema::Print>("🖨️", parent), mMessage(message) {
   addInputPort();
   addHint();
 }
