@@ -7,6 +7,15 @@
 // TODO:     Undo/redo (QUndoStack)
 
 namespace KidTech {
+namespace Schema {
+
+class Root;
+class Loop;
+class Print;
+class Sleep;
+class LED;
+}  // namespace Schema
+
 namespace IDE {
 
 class MainLoop;
@@ -58,10 +67,45 @@ class Scene : public QGraphicsScene {
    */
   void createItemAt(const QString& type, const QPointF& pos);
 
+  /**
+   * @brief Serializes the current scene into a Protobuf schema.
+   * @param root The root schema object to populate.
+   * @return True if serialization was successful, false otherwise.
+   */
+  bool serialize(const std::shared_ptr<Schema::Root>& root);
+
  private:
   void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
   void keyPressEvent(QKeyEvent* event) override;
+
+  /**
+   * @brief Recursively populates a Loop schema from a LoopNode and its
+   * connected actions.
+   * @param loop The LoopNode to serialize.
+   * @param loopSchema The Protobuf Loop message to populate.
+   */
+  void getLoopSchema(const Node* loop, Schema::Loop* loopSchema);
+
+  /** @brief Populates a Print schema from a PrintNode.
+   * * @param printNode The PrintNode to serialize.
+   * @param printSchema The Protobuf Print message to populate.
+   */
+  void getPrintSchema(const PrintNode* printNode, Schema::Print* printSchema);
+
+  /**
+   * * @brief Populates a Sleep schema from a SleepNode.
+   * @param sleepNode The SleepNode to serialize.
+   * @param sleepSchema The Protobuf Sleep message to populate.
+   */
+  void getSleepSchema(const SleepNode* sleepNode, Schema::Sleep* sleepSchema);
+
+  /**
+   * * @brief Populates an LED schema from an LedNode.
+   * @param ledNode The LedNode to serialize.
+   * @param ledSchema The Protobuf LED message to populate.
+   */
+  void getLedSChema(const LedNode* ledNode, Schema::LED* ledSchema);
 
   /** @brief Deletes a connection and cleans up its references.
    * @param conn The connection to delete.
@@ -75,6 +119,7 @@ class Scene : public QGraphicsScene {
 
   /** @brief The temporary connection line during dragging. */
   QGraphicsPathItem* mTempConnection = nullptr;
+  std::shared_ptr<Schema::Root> mSchema;
 };
 }  // namespace IDE
 }  // namespace KidTech

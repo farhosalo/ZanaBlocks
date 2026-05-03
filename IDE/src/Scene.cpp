@@ -4,12 +4,17 @@
 #include <QKeyEvent>
 
 #include "LedNode.h"
+#include "Logging.h"
 #include "LoopNode.h"
 #include "PrintNode.h"
+#include "Schema.pb.h"
 #include "SleepNode.h"
-#include "PrintNode.h"
+
+using namespace KidTech::Utilities;
+
 namespace KidTech::IDE {
-Scene::Scene(QObject* parent) : QGraphicsScene(parent) {}
+Scene::Scene(QObject* parent)
+    : QGraphicsScene(parent), mSchema(std::make_shared<Schema::Root>()) {}
 
 void Scene::beginConnection(NodePort* port) {
   mStartPort = port;
@@ -101,6 +106,33 @@ void Scene::createItemAt(const QString& type, const QPointF& pos) {
   }
 }
 
+bool Scene::serialize(const std::shared_ptr<Schema::Root>& root) {
+  LoopNode* mainLoop = nullptr;
+
+  // Find the main loop node
+  for (auto* item : items()) {
+    if (auto* node = dynamic_cast<LoopNode*>(item)) {
+      if (node->isMainLoop()) {
+        mainLoop = node;
+        break;
+      }
+    }
+  }
+
+  if (!mainLoop) {
+    ERROR("Main loop node not found!");
+    return false;
+  }
+
+  if (mainLoop->getPorts().first()->connections().empty()) {
+    ERROR("Main loop has no connections!");
+    return false;  // Main loop node not found
+  }
+
+  getLoopSchema(mainLoop, root->mutable_mainloop());
+  return true;
+}
+
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
   updateConnection(event->scenePos());
   QGraphicsScene::mouseMoveEvent(event);
@@ -129,6 +161,51 @@ void Scene::keyPressEvent(QKeyEvent* event) {
   }
   QGraphicsScene::keyPressEvent(event);
 }
+void Scene::getLoopSchema(const Node* loop, Schema::Loop* loopSchema) {
+  // TODO: Sort loop elements according to X position
+
+  loopSchema->CopyFrom(loop->schema());
+  loopSchema->mutable_position()->set_x(loop->pos().x());
+  loopSchema->mutable_position()->set_y(loop->pos().y());
+
+  for (auto* port : loop->getPorts()) {
+    if (port->getType() != PortType::Input) {
+      for (auto* connection : port->connections()) {
+        Node* targetNode = connection->getEndPort()->parentNode();
+        if (auto* loopNode = dynamic_cast<LoopNode*>(targetNode)) {
+          getLoopSchema(loopNode, loopSchema->add_actions()->mutable_loop());
+        } else if (auto* printNode = dynamic_cast<PrintNode*>(targetNode)) {
+          getPrintSchema(printNode, loopSchema->add_actions()->mutable_print());
+        }
+        if (auto* sleepNode = dynamic_cast<SleepNode*>(targetNode)) {
+          getSleepSchema(sleepNode, loopSchema->add_actions()->mutable_sleep());
+        }
+        if (auto* ledNode = dynamic_cast<LedNode*>(targetNode)) {
+          getLedSChema(ledNode, loopSchema->add_actions()->mutable_led());
+        }
+      }
+    }
+  }
+}
+void Scene::getPrintSchema(const PrintNode* printNode,
+                           Schema::Print* printSchema) {
+  printSchema->CopyFrom(printNode->schema());
+  printSchema->mutable_position()->set_x(printNode->pos().x());
+  printSchema->mutable_position()->set_y(printNode->pos().y());
+}
+void Scene::getSleepSchema(const SleepNode* sleepNode,
+                           Schema::Sleep* sleepSchema) {
+  sleepSchema->CopyFrom(sleepNode->schema());
+  sleepSchema->mutable_position()->set_x(sleepNode->pos().x());
+  sleepSchema->mutable_position()->set_y(sleepNode->pos().y());
+}
+
+void Scene::getLedSChema(const LedNode* ledNode, Schema::LED* ledSchema) {
+  ledSchema->CopyFrom(ledNode->schema());
+  ledSchema->mutable_position()->set_x(ledNode->pos().x());
+  ledSchema->mutable_position()->set_y(ledNode->pos().y());
+}
+
 void Scene::deleteConnection(NodeConnector* conn) {
   if (!conn) return;
   conn->getStartPort()->removeConnection(conn);

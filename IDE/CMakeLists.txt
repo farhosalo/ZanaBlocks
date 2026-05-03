@@ -28,6 +28,7 @@ target_link_libraries(lib${PROJECT_NAME}
     Qt6::Core 
     Qt6::Widgets
     serialport
+    Schema
 )
 add_executable(${PROJECT_NAME}
     src/main.cpp
