@@ -107,6 +107,30 @@ bool ReplClient::connect(const std::string& port, const int baudRate) {
   return true;
 }
 
+std::vector<std::string> ReplClient::getUsbSerialPorts() {
+  std::vector<std::string> usbPorts;
+
+  struct sp_port** ports;
+
+  enum sp_return result = sp_list_ports(&ports);
+  if (result != SP_OK) {
+    ERROR("sp_list_ports failed:" << result);
+    return usbPorts;
+  }
+
+  for (int i = 0; ports[i] != NULL; i++) {
+    struct sp_port* port = ports[i];
+
+    // Only care about USB transport
+    if (sp_get_port_transport(port) == SP_TRANSPORT_USB) {
+      usbPorts.push_back(sp_get_port_name(port));
+    }
+  }
+
+  sp_free_port_list(ports);
+  return usbPorts;
+}
+
 void ReplClient::writeAll(const std::string& data) {
   sp_blocking_write(mSerialPort, data.data(), data.size(), 1000);
 }
