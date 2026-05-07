@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 
 #include <QAction>
+#include <QComboBox>
 #include <QGraphicsScene>
 #include <QMenu>
 #include <QMenuBar>
@@ -10,6 +11,7 @@
 #include <QToolBar>
 
 #include "ComponentButton.h"
+#include "IdeSettings.h"
 #include "LogOutput.h"
 #include "Logging.h"
 #include "LoopNode.h"
@@ -23,8 +25,18 @@ auto constexpr WINDOW_SIZE_HEIGHT{750};
 using namespace Utilities;
 
 auto MainWindow::run() {
-  if (!mReplClient->connect(PORT)) {
-    mLogOutput->appendPlainText("Failed to connect to device!");
+  if (mSerialPort.empty()) {
+    auto ports = mReplClient->getUsbSerialPorts();
+    if (ports.empty()) {
+      mLogOutput->appendPlainText("No serial ports found!");
+      return;
+    }
+    mSerialPort = ports[0];
+  }
+
+  if (!mReplClient->connect(mSerialPort)) {
+    mLogOutput->appendPlainText("Failed to connect to device: " +
+                                QString::fromStdString(mSerialPort));
     return;
   }
 
@@ -50,6 +62,16 @@ auto MainWindow::save() {
   mLogOutput->appendPlainText("Saving the program...");
 }
 auto MainWindow::open() { mLogOutput->appendPlainText("Opening a program..."); }
+
+auto MainWindow::settings() {
+  SettingsDialog dialog(this);
+  if (dialog.exec() == QDialog::Accepted) {
+    auto port = dialog.findChild<QComboBox*>("Port:");
+    if (port) {
+      mSerialPort = port->currentText().toStdString();
+    }
+  }
+}
 
 auto MainWindow::initUI() {
   // Right side: Diagram View + Log Output
@@ -117,6 +139,14 @@ auto MainWindow::initMenuAndToolbar() {
   toolBar->addAction(runAction);
 
   connect(runAction, &QAction::triggered, this, &MainWindow::run);
+
+  // Settings
+  auto* settingsMenu = menuBar()->addMenu("&Settings");
+  auto* settingsAction = settingsMenu->addAction("⚙️  Settings");
+  toolBar->addSeparator();
+  toolBar->addAction(settingsAction);
+
+  connect(settingsAction, &QAction::triggered, this, &MainWindow::settings);
 }
 
 auto MainWindow::initSidebar() {

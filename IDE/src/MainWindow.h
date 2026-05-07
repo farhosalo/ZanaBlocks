@@ -13,8 +13,6 @@ class View;
 
 class LogOutput;
 
-auto constexpr PORT{"/dev/tty.usbserial-0001"};
-
 class MainWindow : public QMainWindow {
   Q_OBJECT
 
@@ -29,7 +27,9 @@ class MainWindow : public QMainWindow {
   auto run();
   auto save();
   auto open();
+  auto settings();
 
+ private:
   View* mDiagramView{nullptr};
   Scene* mDiagramScene{nullptr};
   LogOutput* mLogOutput{nullptr};
@@ -37,5 +37,7 @@ class MainWindow : public QMainWindow {
   LoopItem* mMainLoop{nullptr};
   std::unique_ptr<ReplClient::ReplClient> mReplClient{
       std::make_unique<ReplClient::ReplClient>()};
+
+  std::string mSerialPort{""};
 };
 }  // namespace KidTech::IDE

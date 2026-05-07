@@ -22,6 +22,7 @@ add_library(lib${PROJECT_NAME}
     src/SleepNode.cpp
     src/LedNode.cpp 
     src/NodeSettings.cpp
+    src/IdeSettings.cpp
 )
 
 target_link_libraries(lib${PROJECT_NAME}
@@ -73,6 +74,7 @@ set (HEADERS
     src/SleepNode.h
     src/LedNode.h
     src/NodeSettings.h
+    src/IdeSettings.h
 )
 install(FILES ${HEADERS}
     DESTINATION ${INSTALL_DIR}/include/${PROJECT_NAME}
