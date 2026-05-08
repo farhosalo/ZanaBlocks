@@ -1,6 +1,7 @@
 #pragma once
 
 #include <libserialport.h>
+#include <stdint.h>
 
 #include <functional>
 #include <stdexcept>
@@ -11,7 +12,7 @@ namespace KidTech::ReplClient {
 /**
  * @brief The state of a command execution.
  */
-enum class RUN_STATE : uint8_t {
+enum class RUN_STATE {
   ERROR = 0,    ///< Indicates an error occurred during command execution. The
                 ///< output string will contain the error message.
   SUCCESS = 1,  ///< Indicates the command executed successfully. The output

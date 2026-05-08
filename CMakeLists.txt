@@ -59,8 +59,6 @@ if(APPLE)
     endif()
 endif()
 
-set(INSTALL_DIR ${CMAKE_SOURCE_DIR}/install) 
-
 add_subdirectory(Schema)
 add_subdirectory(Interpreter)
 add_subdirectory(IDE)

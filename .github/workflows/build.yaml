@@ -9,14 +9,16 @@ on:
 env:
   QT_VERSION: "6.8.3"
   BUILD_TYPE: Release
+  APP_NAME: "IDE"     
+  ICON_PATH: "resources/icon.png" 
 
 # ─────────────────────────────────────────────────────────────
-# Linux
+# Linux  →  AppImage
 # ─────────────────────────────────────────────────────────────
 jobs:
   build-linux:
     name: Linux (GCC)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
@@ -26,8 +28,27 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             cmake ninja-build \
-            libprotobuf-dev protobuf-compiler \
             libserialport-dev
+
+      - name: Cache Protobuf
+        id: cache-protobuf
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/protobuf-install
+          key: protobuf-29.0-ubuntu-22.04
+
+      - name: Build and install Protobuf
+        if: steps.cache-protobuf.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --recurse-submodules --branch v29.0 \
+            https://github.com/protocolbuffers/protobuf.git /tmp/protobuf
+          cmake -S /tmp/protobuf -B /tmp/protobuf-build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/protobuf-install \
+            -Dprotobuf_BUILD_TESTS=OFF
+          cmake --build /tmp/protobuf-build --parallel
+          cmake --install /tmp/protobuf-build
 
       - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v4
@@ -42,20 +63,70 @@ jobs:
         run: |
           cmake -B build \
             -G Ninja \
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DProtobuf_ROOT=${{ github.workspace }}/protobuf-install
 
       - name: Build
         run: cmake --build build --parallel
 
-      - name: Upload artifacts
+      - name: Install into AppDir
+        run: cmake --install build --prefix AppDir/usr
+
+      - name: Create .desktop file and install icon
+        run: |
+          mkdir -p AppDir/usr/share/applications
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+
+          # Use repo icon if it exists, otherwise generate a placeholder
+          if [ -f "${{ env.ICON_PATH }}" ]; then
+            cp "${{ env.ICON_PATH }}" \
+              AppDir/usr/share/icons/hicolor/256x256/apps/${{ env.APP_NAME }}.png
+          else
+            sudo apt-get install -y imagemagick
+            convert -size 256x256 xc:#3A86FF \
+              -gravity Center -fill white \
+              -font DejaVu-Sans-Bold -pointsize 64 \
+              -annotate 0 "${{ env.APP_NAME }}" \
+              AppDir/usr/share/icons/hicolor/256x256/apps/${{ env.APP_NAME }}.png
+          fi
+
+          cat > AppDir/usr/share/applications/${{ env.APP_NAME }}.desktop << EOF
+          [Desktop Entry]
+          Name=${{ env.APP_NAME }}
+          Exec=${{ env.APP_NAME }}
+          Icon=${{ env.APP_NAME }}
+          Type=Application
+          Categories=Utility;
+          EOF
+
+      - name: Download linuxdeploy
+        run: |
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-qt-x86_64.AppImage
+
+      - name: Create AppImage
+        env:
+          QMAKE: ${{ env.QT_ROOT_DIR }}/bin/qmake
+          OUTPUT: ${{ env.APP_NAME }}-linux-x86_64.AppImage
+          # Never bundle glibc — it must come from the host system
+          EXCLUDELIST: "libglib-2.0.so.0:libgthread-2.0.so.0"
+        run: |
+          APPIMAGE_EXTRACT_AND_RUN=1 ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --plugin qt \
+            --output appimage
+
+      - name: Upload AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: linux-build
-          path: build/
-          retention-days: 7
+          name: linux-appimage
+          path: "*.AppImage"
+          retention-days: 30
 
 # ─────────────────────────────────────────────────────────────
-# macOS
+# macOS  →  DMG
 # ─────────────────────────────────────────────────────────────
   build-macos:
     name: macOS (Clang)
@@ -88,21 +159,70 @@ jobs:
         run: |
           cmake -B build \
             -G Ninja \
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_INSTALL_RPATH="@executable_path/../Frameworks" \
+            -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
 
       - name: Build
         run: cmake --build build --parallel
 
-      - name: Upload artifacts
+      - name: Install into staging
+        run: cmake --install build --prefix staging
+
+      - name: Create .app bundle
+        run: |
+          APP=staging/${{ env.APP_NAME }}.app
+          mkdir -p "$APP/Contents/MacOS"
+          cp staging/bin/${{ env.APP_NAME }} "$APP/Contents/MacOS/"
+          cat > "$APP/Contents/Info.plist" << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+            "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleExecutable</key>
+            <string>${{ env.APP_NAME }}</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.yourcompany.${{ env.APP_NAME }}</string>
+            <key>CFBundleName</key>
+            <string>${{ env.APP_NAME }}</string>
+            <key>CFBundleVersion</key>
+            <string>1.0</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Bundle Qt dependencies
+        run: |
+          ${{ env.QT_ROOT_DIR }}/bin/macdeployqt \
+            staging/${{ env.APP_NAME }}.app
+
+      - name: Ad-hoc sign app bundle
+        run: |
+          codesign --force --deep --sign - \
+            staging/${{ env.APP_NAME }}.app
+
+      - name: Create DMG
+        run: |
+          hdiutil create \
+            -volname "${{ env.APP_NAME }}" \
+            -srcfolder staging/${{ env.APP_NAME }}.app \
+            -ov -format UDZO \
+            ${{ env.APP_NAME }}-macos.dmg
+
+      - name: Upload DMG
         uses: actions/upload-artifact@v4
         with:
-          name: macos-build
-          path: build/
-          retention-days: 7
+          name: macos-dmg
+          path: "*.dmg"
+          retention-days: 30
 
 # ─────────────────────────────────────────────────────────────
-# Windows — uses MSYS2/MinGW64 so all three libs are available
-# via pacman without manual source builds.
+# Windows  →  NSIS installer
 # ─────────────────────────────────────────────────────────────
   build-windows:
     name: Windows (MinGW64)
@@ -126,8 +246,13 @@ jobs:
             protobuf:p
             libserialport:p
             qt6-base:p
+            qt6-tools:p
             cc:p
             clang-tools-extra:p
+
+      - name: Install NSIS
+        shell: pwsh
+        run: choco install nsis -y
 
       - name: Generate libserialport cmake config
         run: |
@@ -151,9 +276,65 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
 
-      - name: Upload artifacts
+      - name: Install into dist
+        run: cmake --install build --prefix dist
+
+      - name: Deploy Qt runtime
+        run: |
+          /mingw64/bin/windeployqt6 \
+            --release \
+            --no-translations \
+            dist/bin/${{ env.APP_NAME }}.exe
+
+      - name: Copy runtime DLLs
+        run: |
+          # Collect all MinGW64 DLLs the executable transitively depends on
+          ldd dist/bin/${{ env.APP_NAME }}.exe \
+            | grep -i '/mingw64/' \
+            | awk '{print $3}' \
+            | xargs -I{} cp -n {} dist/bin/
+
+      - name: Generate NSIS script
+        run: |
+          DIST_WIN=$(cygpath -w $(pwd)/dist/bin)
+          cat > installer.nsi << EOF
+          Unicode true
+          !define APP_NAME    "${{ env.APP_NAME }}"
+          !define OUT_FILE    "${{ env.APP_NAME }}-windows-setup.exe"
+
+          Name            "\${APP_NAME}"
+          OutFile         "\${OUT_FILE}"
+          InstallDir      "\$PROGRAMFILES64\\\${APP_NAME}"
+          InstallDirRegKey HKLM "Software\\\${APP_NAME}" "Install_Dir"
+          RequestExecutionLevel admin
+
+          Section "Install"
+            SetOutPath "\$INSTDIR"
+            File /r "${DIST_WIN}\\*.*"
+            CreateShortcut "\$DESKTOP\\\${APP_NAME}.lnk" "\$INSTDIR\\\${APP_NAME}.exe"
+            WriteUninstaller "\$INSTDIR\\Uninstall.exe"
+            WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\\${APP_NAME}" \
+              "DisplayName" "\${APP_NAME}"
+            WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\\${APP_NAME}" \
+              "UninstallString" "\$INSTDIR\\Uninstall.exe"
+          SectionEnd
+
+          Section "Uninstall"
+            RMDir /r "\$INSTDIR"
+            Delete "\$DESKTOP\\\${APP_NAME}.lnk"
+            DeleteRegKey HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\\${APP_NAME}"
+            DeleteRegKey HKLM "Software\\\${APP_NAME}"
+          SectionEnd
+          EOF
+
+      - name: Build NSIS installer
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\NSIS\makensis.exe" installer.nsi
+
+      - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build
-          path: build/
-          retention-days: 7
+          name: windows-installer
+          path: "*-setup.exe"
+          retention-days: 30

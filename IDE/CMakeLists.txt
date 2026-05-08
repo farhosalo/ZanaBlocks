@@ -79,7 +79,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 # Install the executable
-install(TARGETS ${PROJECT_NAME} DESTINATION ${INSTALL_DIR}/bin)
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
 # Install headers
 set (HEADERS
@@ -101,5 +101,5 @@ set (HEADERS
     src/IdeSettings.h
 )
 install(FILES ${HEADERS}
-    DESTINATION ${INSTALL_DIR}/include/${PROJECT_NAME}
+    DESTINATION include/${PROJECT_NAME}
 )

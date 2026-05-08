@@ -21,7 +21,7 @@ protobuf_generate(
     TARGET Schema
 )
 
-install(TARGETS ${PROJECT_NAME} DESTINATION ${INSTALL_DIR}/lib)
+install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 
 
 file(GLOB_RECURSE HEADERS
@@ -29,5 +29,5 @@ file(GLOB_RECURSE HEADERS
 )
 
 install(FILES ${HEADERS}
-    DESTINATION ${INSTALL_DIR}/include/${PROJECT_NAME}
+    DESTINATION include/${PROJECT_NAME}
 )
