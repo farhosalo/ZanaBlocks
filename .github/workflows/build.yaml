@@ -1,155 +1,159 @@
-name: Qt6 CMake Build
+name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [main, master]
   pull_request:
-    branches: [ main ]
+    branches: [main, master]
 
+env:
+  QT_VERSION: "6.8.3"
+  BUILD_TYPE: Release
+
+# ─────────────────────────────────────────────────────────────
+# Linux
+# ─────────────────────────────────────────────────────────────
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-
-    runs-on: ${{ matrix.os }}
+  build-linux:
+    name: Linux (GCC)
+    runs-on: ubuntu-latest
 
     steps:
-      #
-      # -------------------------
-      # Checkout
-      # -------------------------
-      #
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      #
-      # -------------------------
-      # Install Qt6
-      # -------------------------
-      #
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v3
-        with:
-          version: '6.6.3'
-          cache: true
-
-      #
-      # -------------------------
-      # Linux dependencies
-      # -------------------------
-      #
-      - name: Install Linux dependencies
-        if: matrix.os == 'ubuntu-latest'
+      - name: Install system dependencies
         run: |
           sudo apt-get update
-
           sudo apt-get install -y \
-            build-essential \
-            cmake \
-            ninja-build \
-            protobuf-compiler \
-            libprotobuf-dev \
-            libserialport-dev \
-            patchelf \
-            fuse \
-            libfuse2
+            cmake ninja-build \
+            libprotobuf-dev protobuf-compiler \
+            libserialport-dev
 
-      #
-      # -------------------------
-      # Windows dependencies
-      # -------------------------
-      #
-      - name: Install Windows dependencies
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
-          C:\vcpkg\bootstrap-vcpkg.bat
-          C:\vcpkg\vcpkg install `
-            protobuf:x64-windows `
-            libserialport:x64-windows
-          echo "CMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake" >> $env:GITHUB_ENV
+      - name: Install Qt ${{ env.QT_VERSION }}
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
+          cache: true
 
-      #
-      # -------------------------
-      # Configure
-      # -------------------------
-      #
       - name: Configure
         run: |
           cmake -B build \
-            -S . \
             -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
-
-      #
-      # -------------------------
-      # Build
-      # -------------------------
-      #
       - name: Build
-        run: |
-          cmake --build build --config Release
+        run: cmake --build build --parallel
 
-      #
-      # -------------------------
-      # Linux deployment
-      # -------------------------
-      #
-      - name: Linux Deploy
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          wget -c \
-            https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-x86_64.AppImage
-
-          chmod +x linuxdeployqt-x86_64.AppImage
-
-          mkdir -p AppDir/usr/bin
-
-          cp build/IDE/IDE AppDir/usr/bin/
-
-          export QMAKE=$(which qmake)
-
-          ./linuxdeployqt-x86_64.AppImage \
-            AppDir/usr/bin/IDE \
-            -appimage
-
-      #
-      # -------------------------
-      # Windows deployment
-      # -------------------------
-      #
-      - name: Windows Deploy
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          windeployqt `
-            --release `
-            build\IDE\IDE.exe
-
-      #
-      # -------------------------
-      # Upload Linux artifact
-      # -------------------------
-      #
-      - name: Upload Linux Artifact
-        if: matrix.os == 'ubuntu-latest'
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: IDE-linux-AppImage
-          path: ./*.AppImage
+          name: linux-build
+          path: build/
+          retention-days: 7
 
-      #
-      # -------------------------
-      # Upload Windows artifact
-      # -------------------------
-      #
-      - name: Upload Windows Artifact
-        if: matrix.os == 'windows-latest'
+# ─────────────────────────────────────────────────────────────
+# macOS
+# ─────────────────────────────────────────────────────────────
+  build-macos:
+    name: macOS (Clang)
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          brew update
+          brew install \
+            cmake ninja \
+            protobuf \
+            libserialport \
+            clang-format \
+            llvm
+          echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
+
+      - name: Install Qt ${{ env.QT_VERSION }}
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: mac
+          target: desktop
+          arch: clang_64
+          cache: true
+
+      - name: Configure
+        run: |
+          cmake -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: IDE-windows-build
-          path: build/IDE/
+          name: macos-build
+          path: build/
+          retention-days: 7
+
+# ─────────────────────────────────────────────────────────────
+# Windows — uses MSYS2/MinGW64 so all three libs are available
+# via pacman without manual source builds.
+# ─────────────────────────────────────────────────────────────
+  build-windows:
+    name: Windows (MinGW64)
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MSYS2 (MinGW64)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          pacboy: >-
+            cmake:p
+            ninja:p
+            protobuf:p
+            libserialport:p
+            qt6-base:p
+            cc:p
+            clang-tools-extra:p
+
+      - name: Generate libserialport cmake config
+        run: |
+          MINGW_ROOT=$(cygpath -m /mingw64)
+          mkdir -p /mingw64/lib/cmake/libserialport
+          cat > /mingw64/lib/cmake/libserialport/libserialportConfig.cmake << EOF
+          add_library(libserialport::libserialport SHARED IMPORTED)
+          set_target_properties(libserialport::libserialport PROPERTIES
+            IMPORTED_LOCATION   "${MINGW_ROOT}/bin/libserialport-0.dll"
+            IMPORTED_IMPLIB     "${MINGW_ROOT}/lib/libserialport.dll.a"
+            INTERFACE_INCLUDE_DIRECTORIES "${MINGW_ROOT}/include"
+          )
+          EOF
+
+      - name: Configure
+        run: |
+          cmake -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: build/
+          retention-days: 7

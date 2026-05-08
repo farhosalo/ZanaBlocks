@@ -2,26 +2,35 @@ syntax = "proto3";
 
 package KidTech.Schema;
 
+message Position {
+    int32 x = 1; // X coordinate
+    int32 y = 2; // Y coordinate
+}
+
 // A print action that can be used to output a message.
 message Print{
-    string msg = 1; // message to print
+    Position position = 1; // position to print the message
+    string msg = 2; // message to print
 }
 
 // A sleep action that can be used to pause execution for a specified duration.
 message Sleep{
-    int32 duration = 1; // duration in milliseconds
+    Position position = 1; // position to print the message
+    int32 duration = 2; // duration in milliseconds
 }
 
 // An LED action that can be used to control an LED on the device.
 message LED{
-    int32 pin = 1; // which LED to control
-    bool state = 2; // true for on, false for off
+    Position position = 1; // position to control the LED
+    int32 pin = 2; // which LED to control
+    bool state = 3; // true for on, false for off
 }
 
 // A loop that can contain multiple actions, which can be prints, sleeps, or nested loops.
 message Loop {
-    int32 count = 1; // number of iterations
-    repeated Action actions = 2; // actions to perform in each iteration
+    Position position = 1; // position to print the message
+    int32 count = 2; // number of iterations
+    repeated Action actions = 3; // actions to perform in each iteration
     // You can add more fields here if needed, such as a condition for the loop to break early  
 }
 
