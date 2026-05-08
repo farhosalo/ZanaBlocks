@@ -1,0 +1,155 @@
+name: Qt6 CMake Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      #
+      # -------------------------
+      # Checkout
+      # -------------------------
+      #
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      #
+      # -------------------------
+      # Install Qt6
+      # -------------------------
+      #
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.6.3'
+          cache: true
+
+      #
+      # -------------------------
+      # Linux dependencies
+      # -------------------------
+      #
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            ninja-build \
+            protobuf-compiler \
+            libprotobuf-dev \
+            libserialport-dev \
+            patchelf \
+            fuse \
+            libfuse2
+
+      #
+      # -------------------------
+      # Windows dependencies
+      # -------------------------
+      #
+      - name: Install Windows dependencies
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          choco install protoc -y
+
+          vcpkg install libserialport:x64-windows
+
+          echo "CMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake" >> $env:GITHUB_ENV
+
+      #
+      # -------------------------
+      # Configure
+      # -------------------------
+      #
+      - name: Configure
+        run: |
+          cmake -B build `
+            -S . `
+            -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release
+
+        shell: bash
+
+      #
+      # -------------------------
+      # Build
+      # -------------------------
+      #
+      - name: Build
+        run: |
+          cmake --build build --config Release
+
+      #
+      # -------------------------
+      # Linux deployment
+      # -------------------------
+      #
+      - name: Linux Deploy
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          wget -c \
+            https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-x86_64.AppImage
+
+          chmod +x linuxdeployqt-x86_64.AppImage
+
+          mkdir -p AppDir/usr/bin
+
+          cp build/IDE/IDE AppDir/usr/bin/
+
+          export QMAKE=$(which qmake)
+
+          ./linuxdeployqt-x86_64.AppImage \
+            AppDir/usr/bin/IDE \
+            -appimage
+
+      #
+      # -------------------------
+      # Windows deployment
+      # -------------------------
+      #
+      - name: Windows Deploy
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          windeployqt `
+            --release `
+            build\IDE\IDE.exe
+
+      #
+      # -------------------------
+      # Upload Linux artifact
+      # -------------------------
+      #
+      - name: Upload Linux Artifact
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: IDE-linux-AppImage
+          path: ./*.AppImage
+
+      #
+      # -------------------------
+      # Upload Windows artifact
+      # -------------------------
+      #
+      - name: Upload Windows Artifact
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: IDE-windows-build
+          path: build/IDE/
