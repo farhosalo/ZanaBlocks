@@ -42,7 +42,9 @@ set(CLANG_TIDY_COMMAND
 include_directories(
     ${CMAKE_SOURCE_DIR}/Utilities
     ${CMAKE_BINARY_DIR}/Schema
+    ${CMAKE_BINARY_DIR}/Schema/proto
     ${CMAKE_BINARY_DIR}/Interpreter
+    ${CMAKE_SOURCE_DIR}/Interpreter/src
     ${CMAKE_BINARY_DIR}/IDE
 )
 

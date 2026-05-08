@@ -65,10 +65,11 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          choco install protoc -y
-
-          vcpkg install libserialport:x64-windows
-
+          git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
+          C:\vcpkg\bootstrap-vcpkg.bat
+          C:\vcpkg\vcpkg install `
+            protobuf:x64-windows `
+            libserialport:x64-windows
           echo "CMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake" >> $env:GITHUB_ENV
 
       #
@@ -83,7 +84,6 @@ jobs:
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release
 
-        shell: bash
 
       #
       # -------------------------
