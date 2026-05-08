@@ -28,9 +28,33 @@ add_library(lib${PROJECT_NAME}
 target_link_libraries(lib${PROJECT_NAME}
     Qt6::Core 
     Qt6::Widgets
-    serialport
     Schema
+    Interpreter 
 )
+if (WIN32)
+    find_package(libserialport CONFIG REQUIRED)
+
+    target_link_libraries(lib${PROJECT_NAME}
+        libserialport::libserialport
+    )
+
+else()
+    find_package(PkgConfig REQUIRED)
+
+    pkg_check_modules(SERIALPORT REQUIRED libserialport)
+
+    target_include_directories(lib${PROJECT_NAME} PRIVATE
+        ${SERIALPORT_INCLUDE_DIRS}
+    )
+    target_link_directories(lib${PROJECT_NAME} PRIVATE
+        ${SERIALPORT_LIBRARY_DIRS}
+    )
+    target_link_libraries(lib${PROJECT_NAME}
+        ${SERIALPORT_LIBRARIES}
+    )
+
+endif()
+
 add_executable(${PROJECT_NAME}
     src/main.cpp
 )
