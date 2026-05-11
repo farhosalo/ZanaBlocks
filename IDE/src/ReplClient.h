@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace KidTech::ReplClient {
+namespace ZanaBlocks::ReplClient {
 
 /**
  * @brief The state of a command execution.
@@ -117,4 +117,4 @@ class ReplClient {
   static constexpr std::size_t CHUNK_SIZE = 256;  // bytes per write call
 };
 
-}  // namespace KidTech::ReplClient
+}  // namespace ZanaBlocks::ReplClient

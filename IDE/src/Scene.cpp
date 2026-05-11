@@ -10,9 +10,9 @@
 #include "Schema.pb.h"
 #include "SleepNode.h"
 
-using namespace KidTech::Utilities;
+using namespace ZanaBlocks::Utilities;
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 Scene::Scene(QObject* parent) : QGraphicsScene(parent) {}
 
 void Scene::beginConnection(NodePort* port) {
@@ -237,4 +237,4 @@ void Scene::deleteSelectedConnections() {
     }
   }
 }
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

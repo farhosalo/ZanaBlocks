@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package KidTech.Schema;
+package ZanaBlocks.Schema;
 
 message Position {
     int32 x = 1; // X coordinate

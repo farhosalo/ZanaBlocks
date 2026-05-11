@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-namespace KidTech::Utilities {
+namespace ZanaBlocks::Utilities {
 inline std::string timestamp() {
   const auto time = std::time(nullptr);
   auto constexpr BUF_SIZE{20};
@@ -14,4 +14,4 @@ inline std::string timestamp() {
 
   return std::string{buf.data()};
 }
-}  // namespace KidTech::Utilities
+}  // namespace ZanaBlocks::Utilities

@@ -21,9 +21,9 @@
 #include "View.h"
 #include "google/protobuf/util/json_util.h"
 
-using namespace KidTech::Utilities;
+using namespace ZanaBlocks::Utilities;
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 auto constexpr WINDOW_SIZE_WIDTH{1100};
 auto constexpr WINDOW_SIZE_HEIGHT{750};
 
@@ -188,7 +188,7 @@ auto MainWindow::initSidebar() {
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), mSchema(std::make_shared<Schema::Root>()) {
-  setWindowTitle("KinTech IDE");
+  setWindowTitle("ZanaBlocks IDE");
   resize(WINDOW_SIZE_WIDTH, WINDOW_SIZE_HEIGHT);
 
   initSidebar();
@@ -203,4 +203,4 @@ MainWindow::MainWindow(QWidget* parent)
     mDiagramScene->addItem(node);
   }
 }
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

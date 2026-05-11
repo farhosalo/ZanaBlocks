@@ -6,7 +6,7 @@
 #include "NodePort.h"
 #include "NodeSettings.h"
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 auto constexpr Width{120.0};
 auto constexpr Height{60.0};
 
@@ -127,4 +127,4 @@ QVariant Node::itemChange(const GraphicsItemChange change,
   }
   return QGraphicsItem::itemChange(change, value);
 }
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

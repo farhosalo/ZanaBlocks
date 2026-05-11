@@ -5,7 +5,7 @@
 #include <QMimeData>
 
 #include "Scene.h"
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 
 /**
  * @brief The View class is a custom QGraphicsView that serves as the viewport
@@ -26,4 +26,4 @@ class View : public QGraphicsView {
   Scene* mScene;
 };
 
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

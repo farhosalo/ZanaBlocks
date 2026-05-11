@@ -3,7 +3,7 @@
 #include "BaseNodeSchema.h"
 #include "Schema.pb.h"
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 /**
  * @brief Represents the LED node on visual programming diagram.
  */
@@ -35,4 +35,4 @@ class LedNode : public BaseNodeSchema<Schema::LED> {
  private:
   bool mState;
 };
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

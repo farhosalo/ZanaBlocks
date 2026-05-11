@@ -4,7 +4,7 @@
 #include "NodeConnector.h"
 #include "NodePort.h"
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 class Scene;
 class Node;
 
@@ -70,4 +70,4 @@ class NodePort : public QGraphicsEllipseItem {
    */
   PortType mType;
 };
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

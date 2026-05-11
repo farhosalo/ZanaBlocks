@@ -2,7 +2,7 @@
 #include "BaseNodeSchema.h"
 #include "Schema.pb.h"
 
-namespace KidTech {
+namespace ZanaBlocks {
 
 namespace IDE {
 
@@ -46,4 +46,4 @@ class LoopNode : public BaseNodeSchema<Schema::Loop> {
   uint32_t mIterations{0};
 };
 }  // namespace IDE
-}  // namespace KidTech
+}  // namespace ZanaBlocks

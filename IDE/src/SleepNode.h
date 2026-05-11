@@ -3,7 +3,7 @@
 #include "BaseNodeSchema.h"
 #include "Schema.pb.h"
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 /**
  * @brief Represents the sleep node on visual programming diagram.
  */
@@ -35,4 +35,4 @@ class SleepNode : public BaseNodeSchema<Schema::Sleep> {
  private:
   uint32_t mSleepTime;
 };
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

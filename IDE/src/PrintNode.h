@@ -3,7 +3,7 @@
 #include "BaseNodeSchema.h"
 #include "Schema.pb.h"
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 /**
  * @brief Represents the print node in the visual programming diagram.
  */
@@ -35,4 +35,4 @@ class PrintNode : public BaseNodeSchema<Schema::Print> {
  private:
   std::string mMessage;
 };
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

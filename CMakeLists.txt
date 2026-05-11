@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.31.6)
 
-project(KidTech, VERSION 0.0.1)
+project(ZanaBlocks VERSION 0.0.1)
 
 find_package(PkgConfig REQUIRED)
 

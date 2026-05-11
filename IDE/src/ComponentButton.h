@@ -5,7 +5,7 @@
 #include <QMouseEvent>
 #include <QToolButton>
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 
 /**
  * @brief A button in the sidebar that can be dragged onto the diagram to create
@@ -24,4 +24,4 @@ class ComponentButton : public QToolButton {
   QString mType;
   QPoint mDragStartPosition;
 };
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

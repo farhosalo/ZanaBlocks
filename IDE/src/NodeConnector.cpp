@@ -4,7 +4,7 @@
 
 #include "NodePort.h"
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 NodeConnector::NodeConnector(NodePort* start, NodePort* end)
     : mStartPort(start), mEndPort(end) {
   setPen(QPen(Qt::black, 2));
@@ -34,4 +34,4 @@ void NodeConnector::paint(QPainter* painter,
   setPen(QPen(selected ? Qt::red : Qt::black, selected ? 3.0 : 2.0));
   QGraphicsPathItem::paint(painter, option, widget);
 }
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

@@ -9,7 +9,7 @@
 #include "Base64.h"
 #include "Logging.h"
 
-namespace KidTech::ReplClient {
+namespace ZanaBlocks::ReplClient {
 
 using namespace Utilities;
 
@@ -196,4 +196,4 @@ std::pair<RUN_STATE, std::string> ReplClient::run(const std::string& code) {
   writeAll(code + "\x04");
   return readUntil("\x04>", 3000);
 }
-}  // namespace KidTech::ReplClient
+}  // namespace ZanaBlocks::ReplClient

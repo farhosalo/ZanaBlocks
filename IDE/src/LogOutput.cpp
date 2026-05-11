@@ -2,7 +2,7 @@
 
 #include <QStyle>
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 void LogOutput::contextMenuEvent(QContextMenuEvent* event) {
   auto* menu = createStandardContextMenu();
 
@@ -21,4 +21,4 @@ void LogOutput::contextMenuEvent(QContextMenuEvent* event) {
   // Clean up the menu after it's closed
   delete menu;
 }
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

@@ -1,6 +1,6 @@
 #include "ComponentButton.h"
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 ComponentButton::ComponentButton(const QString& itemType, QWidget* parent)
     : QToolButton(parent), mType(itemType) {}
 
@@ -21,4 +21,4 @@ void ComponentButton::mouseMoveEvent(QMouseEvent* event) {
   drag->setPixmap(icon().pixmap(32, 32));
   drag->exec(Qt::CopyAction);
 }
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

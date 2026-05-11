@@ -11,7 +11,7 @@
 #include <QLineEdit>
 #include <QSpinBox>
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 NodeSettings::NodeSettings(std::string_view description,
                            google::protobuf::Message& message, QWidget* parent)
     : QDialog(parent), mDescription(description), mSchema(message) {
@@ -118,4 +118,4 @@ void NodeSettings::save() {
     }
   }
 }
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

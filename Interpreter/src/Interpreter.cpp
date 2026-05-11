@@ -4,9 +4,9 @@
 
 #include "Logging.h"
 
-using namespace KidTech::Utilities;
+using namespace ZanaBlocks::Utilities;
 
-namespace KidTech::Interpreter {
+namespace ZanaBlocks::Interpreter {
 
 bool Interpreter::interpret(const std::shared_ptr<Schema::Root>& schema) {
   reset();
@@ -86,4 +86,4 @@ bool Interpreter::extractLoop(const Schema::Loop& loop) {
 
   return true;
 }
-}  // namespace KidTech::Interpreter
+}  // namespace ZanaBlocks::Interpreter

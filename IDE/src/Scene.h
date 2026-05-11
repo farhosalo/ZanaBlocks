@@ -6,7 +6,7 @@
 
 // TODO:     Undo/redo (QUndoStack)
 
-namespace KidTech {
+namespace ZanaBlocks {
 namespace Schema {
 
 class Root;
@@ -121,4 +121,4 @@ class Scene : public QGraphicsScene {
   QGraphicsPathItem* mTempConnection = nullptr;
 };
 }  // namespace IDE
-}  // namespace KidTech
+}  // namespace ZanaBlocks

@@ -4,7 +4,7 @@
 #include <QMenu>
 #include <QPlainTextEdit>
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 
 /**
  *@brief A custom QPlainTextEdit that adds a "Delete All" option to the context
@@ -19,4 +19,4 @@ class LogOutput : public QPlainTextEdit {
  protected:
   void contextMenuEvent(QContextMenuEvent* event) override;
 };
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

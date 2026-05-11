@@ -2,7 +2,7 @@
 
 #include "Node.h"
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 
 /** @brief Base class for nodes that are associated with a specific protobuf
  * schema type.
@@ -34,4 +34,4 @@ class BaseNodeSchema : public Node {
  private:
   SchemaType mSchema;
 };
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

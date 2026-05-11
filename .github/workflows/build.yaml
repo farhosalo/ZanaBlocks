@@ -9,7 +9,7 @@ on:
 env:
   QT_VERSION: "6.8.3"
   BUILD_TYPE: Release
-  APP_NAME: "IDE"     
+  APP_NAME: "ZanaBlocks"     
   ICON_PATH: "resources/icon.png" 
 
 # ─────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
 #pragma once
-namespace KidTech::Schema {
+namespace ZanaBlocks::Schema {
 auto constexpr VERSION{"@PROJECT_VERSION@"};
-}  // namespace KidTech::Schema
+}  // namespace ZanaBlocks::Schema

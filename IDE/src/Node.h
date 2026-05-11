@@ -6,7 +6,7 @@
 
 #include "NodePort.h"
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 
 /**
  * @brief Represents a node in the visual programming diagram. Each node can
@@ -99,4 +99,4 @@ class Node : public QGraphicsItem {
   /* Node properties */
   QColor mColor{QColor(100, 150, 240)};
 };
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

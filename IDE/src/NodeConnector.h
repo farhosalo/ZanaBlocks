@@ -2,7 +2,7 @@
 #include <QGraphicsPathItem>
 #include <QPen>
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 
 class NodePort;
 
@@ -47,4 +47,4 @@ class NodeConnector : public QGraphicsPathItem {
   QPointF
       mTempEndPoint;  // Used when dragging a connection without a target port
 };
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

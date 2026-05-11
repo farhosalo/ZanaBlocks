@@ -1,5 +1,3 @@
-project(IDE VERSION 0.0.1)
-
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 

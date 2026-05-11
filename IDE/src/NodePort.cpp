@@ -3,7 +3,7 @@
 #include "Node.h"
 #include "Scene.h"
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 NodePort::NodePort(PortType type, QGraphicsItem* parent)
     : QGraphicsEllipseItem(-5, -5, 10, 10, parent), mType(type) {
   setBrush(Qt::darkGray);
@@ -25,4 +25,4 @@ void NodePort::mousePressEvent(QGraphicsSceneMouseEvent* event) {
     diagramScene->beginConnection(this);
   }
 }
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

@@ -3,7 +3,7 @@
 #include <QDialog>
 class QFormLayout;
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 class SettingsDialog : public QDialog {
   Q_OBJECT
 
@@ -15,4 +15,4 @@ class SettingsDialog : public QDialog {
   void saveSettings();
   void addPortSettings(QFormLayout* layout);
 };
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

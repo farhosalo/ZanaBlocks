@@ -6,7 +6,7 @@
 
 class QFormLayout;
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 
 /**
  * @brief A dialog for editing the properties of a node based on its protobuf
@@ -34,4 +34,4 @@ class NodeSettings : public QDialog {
   std::string_view mDescription;
   google::protobuf::Message& mSchema;
 };
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace KidTech::Utilities {
+namespace ZanaBlocks::Utilities {
 
 // Base64 encoding utility for file transfer. This is a simple implementation
 
@@ -31,4 +31,4 @@ inline std::string base64Encode(const uint8_t* data, std::size_t len) {
   }
   return out;
 }
-}  // namespace KidTech::Utilities
+}  // namespace ZanaBlocks::Utilities

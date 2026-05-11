@@ -1,4 +1,0 @@
-#pragma once
-namespace KidTech::IDE {
-auto constexpr VERSION{"@PROJECT_VERSION@"};
-}  // namespace KidTech::IDE

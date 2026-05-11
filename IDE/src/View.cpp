@@ -1,6 +1,6 @@
 #include "View.h"
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 View::View(Scene* scene, QWidget* parent)
     : QGraphicsView(scene, parent), mScene(scene) {
   setAcceptDrops(true);
@@ -27,4 +27,4 @@ void View::dropEvent(QDropEvent* event) {
   mScene->createItemAt(event->mimeData()->text(), scenePos);
   event->acceptProposedAction();
 }
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

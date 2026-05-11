@@ -7,7 +7,7 @@ class QPlainTextEdit;
 class LoopItem;
 class QToolBar;
 
-namespace KidTech {
+namespace ZanaBlocks {
 namespace Schema {
 
 class Root;
@@ -48,4 +48,4 @@ class MainWindow : public QMainWindow {
   std::shared_ptr<Schema::Root> mSchema;
 };
 }  // namespace IDE
-}  // namespace KidTech
+}  // namespace ZanaBlocks

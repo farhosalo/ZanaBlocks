@@ -1,7 +1,7 @@
 #pragma once
 #include "Schema.pb.h"
 
-namespace KidTech::Interpreter {
+namespace ZanaBlocks::Interpreter {
 
 /**
  * The Interpreter class is responsible for interpreting a given schema and
@@ -39,4 +39,4 @@ class Interpreter {
   int mCurrentLevel{0};
   Lines mLines;
 };
-}  // namespace KidTech::Interpreter
+}  // namespace ZanaBlocks::Interpreter

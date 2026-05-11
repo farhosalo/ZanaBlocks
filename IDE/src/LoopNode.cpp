@@ -1,6 +1,6 @@
 #include "LoopNode.h"
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 LoopNode::LoopNode(bool isMainLoop, QGraphicsItem* parent)
     : BaseNodeSchema<Schema::Loop>("🔄", parent), mIsMainLoop(isMainLoop) {
   if (!isMainLoop) {
@@ -9,4 +9,4 @@ LoopNode::LoopNode(bool isMainLoop, QGraphicsItem* parent)
   addMultiOutputPort();
   addHint();
 }
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

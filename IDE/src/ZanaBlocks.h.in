@@ -1,0 +1,4 @@
+#pragma once
+namespace ZanaBlocks::IDE {
+auto constexpr VERSION{"@PROJECT_VERSION@"};
+}  // namespace ZanaBlocks::IDE

@@ -7,7 +7,7 @@
 
 #include "ReplClient.h"
 
-namespace KidTech::IDE {
+namespace ZanaBlocks::IDE {
 SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
   setWindowTitle("Settings");
 
@@ -39,4 +39,4 @@ void SettingsDialog::addPortSettings(QFormLayout* layout) {
   portList->addItems(list);
   layout->addRow("Port:", portList);
 }
-}  // namespace KidTech::IDE
+}  // namespace ZanaBlocks::IDE

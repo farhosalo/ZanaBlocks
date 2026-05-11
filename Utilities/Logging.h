@@ -2,7 +2,7 @@
 
 #include "DateTime.h"
 
-namespace KidTech::Utilities {
+namespace ZanaBlocks::Utilities {
 auto constexpr RESET{"\033[0m"};
 auto constexpr WHITE{"\033[37m"};
 auto constexpr CYAN{"\033[36m"};
@@ -28,4 +28,4 @@ auto constexpr PURPLE{"\033[35m"};
     std::exit(EXIT_FAILURE); \
   } while (0)
 // NOLINTEND
-}  // namespace KidTech::Utilities
+}  // namespace ZanaBlocks::Utilities
