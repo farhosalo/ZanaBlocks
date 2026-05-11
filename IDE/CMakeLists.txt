@@ -21,6 +21,8 @@ add_library(lib${PROJECT_NAME}
     src/LedNode.cpp 
     src/NodeSettings.cpp
     src/IdeSettings.cpp
+    src/LicenseDialog.cpp
+    src/AboutDialog.cpp
 )
 
 target_link_libraries(lib${PROJECT_NAME}
@@ -97,6 +99,8 @@ set (HEADERS
     src/LedNode.h
     src/NodeSettings.h
     src/IdeSettings.h
+    src/LicenseDialog.h
+    src/AboutDialog.h
 )
 install(FILES ${HEADERS}
     DESTINATION include/${PROJECT_NAME}

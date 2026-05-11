@@ -10,9 +10,11 @@
 #include <QStatusBar>
 #include <QToolBar>
 
+#include "AboutDialog.h"
 #include "ComponentButton.h"
 #include "IdeSettings.h"
 #include "Interpreter.h"
+#include "LicenseDialog.h"
 #include "LogOutput.h"
 #include "Logging.h"
 #include "LoopNode.h"
@@ -160,6 +162,25 @@ auto MainWindow::initMenuAndToolbar() {
   toolBar->addAction(settingsAction);
 
   connect(settingsAction, &QAction::triggered, this, &MainWindow::settings);
+
+  // Help
+  auto* helpMenu = menuBar()->addMenu("&Help");
+  auto* aboutAction = helpMenu->addAction("ℹ️  About");
+  auto* licensesAction = helpMenu->addAction("📄  Licenses");
+
+  toolBar->addSeparator();
+  toolBar->addAction(aboutAction);
+  toolBar->addAction(licensesAction);
+
+  connect(aboutAction, &QAction::triggered, this, [this]() {
+    AboutDialog dialog(this);
+    dialog.exec();
+  });
+
+  connect(licensesAction, &QAction::triggered, this, [this]() {
+    LicensesDialog dialog(this);
+    dialog.exec();
+  });
 }
 
 auto MainWindow::initSidebar() {
