@@ -1,0 +1,22 @@
+# NOTICE
+
+ZanaBlocks
+Copyright (c) 2026 Farho Salo
+
+This product includes software developed by third parties.
+
+Third-party components used in this project include:
+
+- Qt Framework
+  Copyright (C) The Qt Company Ltd.
+  Licensed under LGPLv3/GPLv3.
+
+- Protocol Buffers (protobuf)
+  Copyright (c) Google Inc.
+  Licensed under the BSD 3-Clause License.
+
+- libserialport
+  Copyright (C) sigrok project contributors.
+  Licensed under the GNU Lesser General Public License.
+
+Copies of third-party licenses are provided in the LICENSES directory.
