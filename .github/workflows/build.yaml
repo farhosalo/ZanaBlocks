@@ -10,7 +10,7 @@ env:
   QT_VERSION: "6.8.3"
   BUILD_TYPE: Release
   APP_NAME: "ZanaBlocks"     
-  ICON_PATH: "resources/icon.png" 
+  ICON_PATH: "IDE/assets/icon.png" 
 
 # ─────────────────────────────────────────────────────────────
 # Linux  →  AppImage
@@ -169,13 +169,24 @@ jobs:
       - name: Install into staging
         run: cmake --install build --prefix staging
 
+      - name: Convert icon to ICNS
+        run: |
+          mkdir -p icon.iconset
+          for size in 16 32 64 128 256 512; do
+            sips -z $size $size ${{ env.ICON_PATH }} \
+              --out icon.iconset/icon_${size}x${size}.png
+          done
+          sips -z 1024 1024 ${{ env.ICON_PATH }} \
+            --out icon.iconset/icon_512x512@2x.png
+          iconutil -c icns icon.iconset -o ${{ env.APP_NAME }}.icns
+
       - name: Create .app bundle
         run: |
           APP=staging/${{ env.APP_NAME }}.app
           mkdir -p "$APP/Contents/MacOS"
           mkdir -p "$APP/Contents/Resources"
           cp staging/bin/${{ env.APP_NAME }} "$APP/Contents/MacOS/"
-          # Ship licenses inside the bundle
+          cp ${{ env.APP_NAME }}.icns "$APP/Contents/Resources/"
           [ -d staging/share ] && cp -r staging/share "$APP/Contents/Resources/"
           cat > "$APP/Contents/Info.plist" << EOF
           <?xml version="1.0" encoding="UTF-8"?>
@@ -188,6 +199,8 @@ jobs:
             <key>CFBundleIdentifier</key>
             <string>com.yourcompany.${{ env.APP_NAME }}</string>
             <key>CFBundleName</key>
+            <string>${{ env.APP_NAME }}</string>
+            <key>CFBundleIconFile</key>
             <string>${{ env.APP_NAME }}</string>
             <key>CFBundleVersion</key>
             <string>1.0</string>
@@ -252,6 +265,7 @@ jobs:
             qt6-tools:p
             cc:p
             clang-tools-extra:p
+            imagemagick:p
 
       - name: Install NSIS
         shell: pwsh
@@ -297,10 +311,17 @@ jobs:
             | awk '{print $3}' \
             | xargs -I{} cp -n {} dist/bin/
 
+      - name: Convert icon to ICO
+        run: |
+          magick ${{ env.ICON_PATH }} \
+            -define icon:auto-resize=256,128,64,48,32,16 \
+            installer.ico
+
       - name: Generate NSIS script
         run: |
           DIST_WIN=$(cygpath -w $(pwd)/dist/bin)
           DIST_SHARE=$(cygpath -w $(pwd)/dist/share)
+          ICON_WIN=$(cygpath -w $(pwd)/installer.ico)
           cat > installer.nsi << EOF
           Unicode true
           !define APP_NAME    "${{ env.APP_NAME }}"
@@ -308,6 +329,7 @@ jobs:
 
           Name            "\${APP_NAME}"
           OutFile         "\${OUT_FILE}"
+          Icon            "${ICON_WIN}"
           InstallDir      "\$PROGRAMFILES64\\\${APP_NAME}"
           InstallDirRegKey HKLM "Software\\\${APP_NAME}" "Install_Dir"
           RequestExecutionLevel admin
@@ -317,12 +339,15 @@ jobs:
             File /r "${DIST_WIN}\\*.*"
             SetOutPath "\$INSTDIR\\share"
             File /r "${DIST_SHARE}\\*.*"
-            CreateShortcut "\$DESKTOP\\\${APP_NAME}.lnk" "\$INSTDIR\\\${APP_NAME}.exe"
+            CreateShortcut "\$DESKTOP\\\${APP_NAME}.lnk" \
+              "\$INSTDIR\\\${APP_NAME}.exe" "" "${ICON_WIN}"
             WriteUninstaller "\$INSTDIR\\Uninstall.exe"
             WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\\${APP_NAME}" \
               "DisplayName" "\${APP_NAME}"
             WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\\${APP_NAME}" \
               "UninstallString" "\$INSTDIR\\Uninstall.exe"
+            WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\\${APP_NAME}" \
+              "DisplayIcon" "\$INSTDIR\\\${APP_NAME}.exe"
           SectionEnd
 
           Section "Uninstall"
