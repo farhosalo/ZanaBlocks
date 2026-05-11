@@ -173,7 +173,10 @@ jobs:
         run: |
           APP=staging/${{ env.APP_NAME }}.app
           mkdir -p "$APP/Contents/MacOS"
+          mkdir -p "$APP/Contents/Resources"
           cp staging/bin/${{ env.APP_NAME }} "$APP/Contents/MacOS/"
+          # Ship licenses inside the bundle
+          [ -d staging/share ] && cp -r staging/share "$APP/Contents/Resources/"
           cat > "$APP/Contents/Info.plist" << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
@@ -297,6 +300,7 @@ jobs:
       - name: Generate NSIS script
         run: |
           DIST_WIN=$(cygpath -w $(pwd)/dist/bin)
+          DIST_SHARE=$(cygpath -w $(pwd)/dist/share)
           cat > installer.nsi << EOF
           Unicode true
           !define APP_NAME    "${{ env.APP_NAME }}"
@@ -311,6 +315,8 @@ jobs:
           Section "Install"
             SetOutPath "\$INSTDIR"
             File /r "${DIST_WIN}\\*.*"
+            SetOutPath "\$INSTDIR\\share"
+            File /r "${DIST_SHARE}\\*.*"
             CreateShortcut "\$DESKTOP\\\${APP_NAME}.lnk" "\$INSTDIR\\\${APP_NAME}.exe"
             WriteUninstaller "\$INSTDIR\\Uninstall.exe"
             WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\\${APP_NAME}" \

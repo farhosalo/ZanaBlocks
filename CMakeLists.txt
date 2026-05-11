@@ -59,6 +59,15 @@ if(APPLE)
     endif()
 endif()
 
+
+file(GLOB_RECURSE LICENSE_FILES
+    ${CMAKE_SOURCE_DIR}/LICENSES/*
+)
+
+install(FILES ${LICENSE_FILES}
+    DESTINATION share/licenses
+)
+
 add_subdirectory(Schema)
 add_subdirectory(Interpreter)
 add_subdirectory(IDE)
