@@ -2,3 +2,6 @@ build/*
 release/*
 debug/*
 install/*
+.vscode/*
+*.bak
+.DS_Store
