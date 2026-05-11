@@ -7,7 +7,13 @@ class QPlainTextEdit;
 class LoopItem;
 class QToolBar;
 
-namespace KidTech::IDE {
+namespace KidTech {
+namespace Schema {
+
+class Root;
+}  // namespace Schema
+
+namespace IDE {
 class Scene;
 class View;
 
@@ -39,5 +45,7 @@ class MainWindow : public QMainWindow {
       std::make_unique<ReplClient::ReplClient>()};
 
   std::string mSerialPort{""};
+  std::shared_ptr<Schema::Root> mSchema;
 };
-}  // namespace KidTech::IDE
+}  // namespace IDE
+}  // namespace KidTech

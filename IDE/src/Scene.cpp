@@ -13,8 +13,7 @@
 using namespace KidTech::Utilities;
 
 namespace KidTech::IDE {
-Scene::Scene(QObject* parent)
-    : QGraphicsScene(parent), mSchema(std::make_shared<Schema::Root>()) {}
+Scene::Scene(QObject* parent) : QGraphicsScene(parent) {}
 
 void Scene::beginConnection(NodePort* port) {
   mStartPort = port;

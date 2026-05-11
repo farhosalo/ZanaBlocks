@@ -4,8 +4,9 @@
 
 #include "Logging.h"
 
+using namespace KidTech::Utilities;
+
 namespace KidTech::Interpreter {
-using namespace Utilities;
 
 bool Interpreter::interpret(const std::shared_ptr<Schema::Root>& schema) {
   reset();

@@ -119,7 +119,6 @@ class Scene : public QGraphicsScene {
 
   /** @brief The temporary connection line during dragging. */
   QGraphicsPathItem* mTempConnection = nullptr;
-  std::shared_ptr<Schema::Root> mSchema;
 };
 }  // namespace IDE
 }  // namespace KidTech

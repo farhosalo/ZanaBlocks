@@ -12,11 +12,16 @@
 
 #include "ComponentButton.h"
 #include "IdeSettings.h"
+#include "Interpreter.h"
 #include "LogOutput.h"
 #include "Logging.h"
 #include "LoopNode.h"
 #include "Scene.h"
+#include "Schema.pb.h"
 #include "View.h"
+#include "google/protobuf/util/json_util.h"
+
+using namespace KidTech::Utilities;
 
 namespace KidTech::IDE {
 auto constexpr WINDOW_SIZE_WIDTH{1100};
@@ -39,6 +44,14 @@ auto MainWindow::run() {
                                 QString::fromStdString(mSerialPort));
     return;
   }
+
+  auto schema = std::make_shared<Schema::Root>();
+
+  mDiagramScene->serialize(schema);
+
+  Interpreter::Interpreter interpreter;
+  interpreter.interpret(schema);
+  interpreter.saveToFile("main.py");
 
   mLogOutput->appendPlainText("Uploading main.py...\n");
 
@@ -173,8 +186,9 @@ auto MainWindow::initSidebar() {
   mSidebar->addWidget(ledButton);
 }
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
-  setWindowTitle("KindTech IDE");
+MainWindow::MainWindow(QWidget* parent)
+    : QMainWindow(parent), mSchema(std::make_shared<Schema::Root>()) {
+  setWindowTitle("KinTech IDE");
   resize(WINDOW_SIZE_WIDTH, WINDOW_SIZE_HEIGHT);
 
   initSidebar();
