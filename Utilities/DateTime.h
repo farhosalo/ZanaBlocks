@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <ctime>
 #include <iostream>
 #include <string>
