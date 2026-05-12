@@ -45,6 +45,7 @@ include_directories(
     ${CMAKE_BINARY_DIR}/Schema/proto
     ${CMAKE_BINARY_DIR}/Interpreter
     ${CMAKE_SOURCE_DIR}/Interpreter/src
+    ${CMAKE_SOURCE_DIR}/EspTools/src
     ${CMAKE_BINARY_DIR}/IDE
 )
 
@@ -70,4 +71,5 @@ install(FILES ${LICENSE_FILES}
 
 add_subdirectory(Schema)
 add_subdirectory(Interpreter)
+add_subdirectory(EspTools)
 add_subdirectory(IDE)

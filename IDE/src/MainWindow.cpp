@@ -12,12 +12,14 @@
 
 #include "AboutDialog.h"
 #include "ComponentButton.h"
+#include "EspTools.h"
 #include "IdeSettings.h"
 #include "Interpreter.h"
 #include "LicenseDialog.h"
 #include "LogOutput.h"
 #include "Logging.h"
 #include "LoopNode.h"
+#include "ReplClient.h"
 #include "Scene.h"
 #include "Schema.pb.h"
 #include "View.h"
@@ -33,19 +35,21 @@ using namespace Utilities;
 
 auto MainWindow::run() {
   if (mSerialPort.empty()) {
-    auto ports = mReplClient->getUsbSerialPorts();
+    auto ports = EspTools::getUsbSerialPorts();
     if (ports.empty()) {
       mLogOutput->appendPlainText("No serial ports found!");
       return;
     }
     mSerialPort = ports[0];
   }
+  auto connection = EspTools::connect(mSerialPort);
 
-  if (!mReplClient->connect(mSerialPort)) {
+  if (connection == nullptr) {
     mLogOutput->appendPlainText("Failed to connect to device: " +
                                 QString::fromStdString(mSerialPort));
     return;
   }
+  EspTools::ReplClient replClient(connection);
 
   auto schema = std::make_shared<Schema::Root>();
 
@@ -61,7 +65,7 @@ auto MainWindow::run() {
     mLogOutput->appendPlainText(QString::fromStdString(message));
   };
 
-  if (!mReplClient->putFile("main.py", "/main.py", callback)) {
+  if (!replClient.putFile("main.py", "/main.py", callback)) {
     mLogOutput->appendPlainText("Failed to upload main.py!");
     return;
   }
@@ -69,7 +73,7 @@ auto MainWindow::run() {
   mLogOutput->appendPlainText("\nUpload complete.\n");
 
   mLogOutput->appendPlainText("Resetting device...\n");
-  mReplClient->reset();
+  replClient.reset();
 
   mLogOutput->appendPlainText("Done.\n");
 }

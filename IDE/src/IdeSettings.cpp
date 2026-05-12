@@ -5,7 +5,7 @@
 #include <QFormLayout>
 #include <QSettings>
 
-#include "ReplClient.h"
+#include "EspTools.h"
 
 namespace ZanaBlocks::IDE {
 SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
@@ -28,7 +28,7 @@ void SettingsDialog::saveSettings() { QSettings settings; }
 void SettingsDialog::addPortSettings(QFormLayout* layout) {
   auto* portList = new QComboBox(this);
 
-  auto ports = ReplClient::ReplClient::getUsbSerialPorts();
+  auto ports = EspTools::getUsbSerialPorts();
 
   QStringList list;
   list.reserve(ports.size());

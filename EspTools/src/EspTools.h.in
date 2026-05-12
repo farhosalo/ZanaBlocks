@@ -1,0 +1,4 @@
+#pragma once
+namespace ZanaBlocks::EspTools {
+auto constexpr VERSION{"@PROJECT_VERSION@"};
+}  // namespace ZanaBlocks::EspTools

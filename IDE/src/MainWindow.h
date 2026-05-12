@@ -1,8 +1,6 @@
 #pragma once
 #include <QMainWindow>
 
-#include "ReplClient.h"
-
 class QPlainTextEdit;
 class LoopItem;
 class QToolBar;
@@ -41,8 +39,6 @@ class MainWindow : public QMainWindow {
   LogOutput* mLogOutput{nullptr};
   QToolBar* mSidebar{nullptr};
   LoopItem* mMainLoop{nullptr};
-  std::unique_ptr<ReplClient::ReplClient> mReplClient{
-      std::make_unique<ReplClient::ReplClient>()};
 
   std::string mSerialPort{""};
   std::shared_ptr<Schema::Root> mSchema;

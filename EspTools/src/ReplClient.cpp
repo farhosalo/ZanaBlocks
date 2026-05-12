@@ -9,7 +9,7 @@
 #include "Base64.h"
 #include "Logging.h"
 
-namespace ZanaBlocks::ReplClient {
+namespace ZanaBlocks::EspTools {
 
 using namespace Utilities;
 
@@ -86,53 +86,8 @@ void ReplClient::reset() {
   ::usleep(1'500'000);
 }
 
-bool ReplClient::connect(const std::string& port, const int baudRate) {
-  if (sp_get_port_by_name(port.c_str(), &mSerialPort) != SP_OK) {
-    ERROR("Port not found: " + port);
-    return false;
-  }
-
-  if (sp_open(mSerialPort, SP_MODE_READ_WRITE) != SP_OK) {
-    ERROR("Failed to open: " + port);
-    return false;
-  }
-
-  sp_set_baudrate(mSerialPort, baudRate);
-  sp_set_bits(mSerialPort, 8);
-  sp_set_parity(mSerialPort, SP_PARITY_NONE);
-  sp_set_stopbits(mSerialPort, 1);
-  sp_set_flowcontrol(mSerialPort, SP_FLOWCONTROL_NONE);
-
-  enterRawRepl();
-  return true;
-}
-
-std::vector<std::string> ReplClient::getUsbSerialPorts() {
-  std::vector<std::string> usbPorts;
-
-  struct sp_port** ports;
-
-  enum sp_return result = sp_list_ports(&ports);
-  if (result != SP_OK) {
-    ERROR("sp_list_ports failed:" << result);
-    return usbPorts;
-  }
-
-  for (int i = 0; ports[i] != NULL; i++) {
-    struct sp_port* port = ports[i];
-
-    // Only care about USB transport
-    if (sp_get_port_transport(port) == SP_TRANSPORT_USB) {
-      usbPorts.push_back(sp_get_port_name(port));
-    }
-  }
-
-  sp_free_port_list(ports);
-  return usbPorts;
-}
-
 void ReplClient::writeAll(const std::string& data) {
-  sp_blocking_write(mSerialPort, data.data(), data.size(), 1000);
+  sp_blocking_write(mSerialConnection.get(), data.data(), data.size(), 1000);
 }
 
 std::pair<RUN_STATE, std::string> ReplClient::readUntil(
@@ -152,7 +107,8 @@ std::pair<RUN_STATE, std::string> ReplClient::readUntil(
     // sp_blocking_read which will wait until data is available or the timeout
     // is reached. The data is read into a temporary buffer and then appended to
     // the main buffer.
-    int n = sp_blocking_read(mSerialPort, tmp, sizeof(tmp), timeoutMs);
+    int n =
+        sp_blocking_read(mSerialConnection.get(), tmp, sizeof(tmp), timeoutMs);
     if (n < 0) {  // Error occurred during read
       buffer = "Failed to read from REPL";
       ERROR(buffer);
@@ -177,23 +133,22 @@ std::pair<RUN_STATE, std::string> ReplClient::readUntil(
 
 void ReplClient::enterRawRepl() {
   writeAll("\x03");
-  sp_blocking_read(mSerialPort, nullptr, 0, 100);  // 100ms pause
+  sp_blocking_read(mSerialConnection.get(), nullptr, 0, 100);  // 100ms pause
 
   // Clear any existing input/output buffers.
   writeAll("\x01");
-  sp_flush(mSerialPort, SP_BUF_INPUT);
+  sp_flush(mSerialConnection.get(), SP_BUF_INPUT);
 }
 
-ReplClient::~ReplClient() {
-  if (mSerialPort) {
-    exitRawRepl();
-    sp_close(mSerialPort);
-    sp_free_port(mSerialPort);
-  }
-}
+ReplClient::ReplClient(const std::shared_ptr<sp_port>& connection)
+    : mSerialConnection(connection) {
+  enterRawRepl();
+};
+
+ReplClient::~ReplClient() { exitRawRepl(); }
 std::pair<RUN_STATE, std::string> ReplClient::run(const std::string& code) {
   // Send the code followed by the raw REPL end marker.
   writeAll(code + "\x04");
   return readUntil("\x04>", 3000);
 }
-}  // namespace ZanaBlocks::ReplClient
+}  // namespace ZanaBlocks::EspTools

@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace ZanaBlocks::ReplClient {
+namespace ZanaBlocks::EspTools {
 
 /**
  * @brief The state of a command execution.
@@ -22,8 +22,6 @@ enum class RUN_STATE {
 };
 
 class ReplClient {
-  static constexpr int DEFAULT_BAUD_RATE = 115200;
-
  public:
   /**
    * Progress callback type: receives a message string to display in the UI.
@@ -33,7 +31,7 @@ class ReplClient {
    */
   using ProgressCallback = std::function<void(const std::string& message)>;
 
-  ReplClient() = default;
+  ReplClient(const std::shared_ptr<sp_port>& connection);
 
   ~ReplClient();
 
@@ -79,22 +77,6 @@ class ReplClient {
    */
   void reset();  // machine.reset() — full reboot
 
-  /**
-   * * @brief Connects to the device via the specified serial port.
-   * @param port The name of the serial port (e.g., "/dev/ttyUSB0" or "COM3").
-   * @param baudRate The baud rate for the connection (defaults to 115200).
-   * @return True if the connection was established and the device entered raw
-   * REPL mode, false otherwise.
-   */
-  bool connect(const std::string& port, const int baudRate = DEFAULT_BAUD_RATE);
-
-  /**
-   * @brief Lists all available USB serial ports on the system.
-   * @return A vector of strings containing the names of the detected USB serial
-   * ports.
-   */
-  static std::vector<std::string> getUsbSerialPorts();
-
  private:
   void writeAll(const std::string& data);
   std::pair<RUN_STATE, std::string> readUntil(const std::string& marker,
@@ -109,7 +91,7 @@ class ReplClient {
    low-level read/write operations. We keep both for convenience, but we
    primarily use the sp_port API for communication.
    */
-  sp_port* mSerialPort;
+  std::shared_ptr<sp_port> mSerialConnection;
 
   /**
    * The size of each chunk to read/write from the serial port.
@@ -117,4 +99,4 @@ class ReplClient {
   static constexpr std::size_t CHUNK_SIZE = 256;  // bytes per write call
 };
 
-}  // namespace ZanaBlocks::ReplClient
+}  // namespace ZanaBlocks::EspTools

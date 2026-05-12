@@ -7,7 +7,6 @@ configure_file(src/${PROJECT_NAME}.h.in ${PROJECT_NAME}Info.h @ONLY)
 
 add_library(lib${PROJECT_NAME}
     src/MainWindow.cpp
-    src/ReplClient.cpp
     src/LogOutput.cpp
     src/Node.cpp
     src/NodeConnector.cpp
@@ -30,30 +29,8 @@ target_link_libraries(lib${PROJECT_NAME}
     Qt6::Widgets
     Schema
     Interpreter 
+    EspTools
 )
-if (WIN32)
-    find_package(libserialport CONFIG REQUIRED)
-
-    target_link_libraries(lib${PROJECT_NAME}
-        libserialport::libserialport
-    )
-
-else()
-    find_package(PkgConfig REQUIRED)
-
-    pkg_check_modules(SERIALPORT REQUIRED libserialport)
-
-    target_include_directories(lib${PROJECT_NAME} PRIVATE
-        ${SERIALPORT_INCLUDE_DIRS}
-    )
-    target_link_directories(lib${PROJECT_NAME} PRIVATE
-        ${SERIALPORT_LIBRARY_DIRS}
-    )
-    target_link_libraries(lib${PROJECT_NAME}
-        ${SERIALPORT_LIBRARIES}
-    )
-
-endif()
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
@@ -85,7 +62,6 @@ install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 set (HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Info.h
     src/MainWindow.h
-    src/ReplClient.h
     src/LogOutput.h
     src/Node.h
     src/NodePort.h
