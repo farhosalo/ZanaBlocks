@@ -9,6 +9,14 @@
 #include <string>
 
 namespace ZanaBlocks::EspTools {
+/**
+ * @brief Result of a probe() call.
+ */
+struct ProbeResult {
+  bool isMicroPython = false;
+  std::string firmwareVersion;  ///< e.g. "1.23.0"
+  std::string hardwareModel;    ///< e.g. "ESP32 module with ESP32"
+};
 
 /**
  * @brief The state of a command execution.
@@ -77,6 +85,17 @@ class ReplClient {
    * cause the device to reboot.
    */
   void reset();  // machine.reset() — full reboot
+
+  /**
+   * @brief Probe the device to check if MicroPython is running and retrieve
+   * firmware/hardware info.
+   *
+   * Sends a minimal Python command using sys and os.uname(). Returns a
+   * ProbeResult with isMicroPython=false if the device is unresponsive, timed
+   * out, or running something else. On success, firmwareVersion and
+   * hardwareModel are populated from os.uname().
+   */
+  ProbeResult probe();
 
  private:
   void writeAll(const std::string& data);

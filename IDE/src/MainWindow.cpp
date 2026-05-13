@@ -50,6 +50,18 @@ auto MainWindow::run() {
     return;
   }
   EspTools::ReplClient replClient(connection);
+  auto probeResult = replClient.probe();
+
+  if (!probeResult.isMicroPython) {
+    mLogOutput->appendPlainText(
+        "Device is not running MicroPython! Please flash MicroPython firmware "
+        "to your device.");
+    return;
+  }
+  mLogOutput->appendPlainText(
+      "Device version : " +
+      QString::fromStdString(probeResult.firmwareVersion) + " (" +
+      QString::fromStdString(probeResult.hardwareModel) + ")");
 
   auto schema = std::make_shared<Schema::Root>();
 

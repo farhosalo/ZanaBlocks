@@ -2,6 +2,7 @@
 
 #include <unistd.h>
 
+#include <algorithm>
 #include <fstream>
 #include <stdexcept>
 #include <vector>
@@ -146,6 +147,70 @@ ReplClient::ReplClient(const std::shared_ptr<sp_port>& connection)
   enterRawRepl();
 };
 
+ProbeResult ReplClient::probe() {
+  ProbeResult result;
+
+  // Pipe-delimited: <impl_name>|<firmware_version>|<hardware_model>
+  // os.uname().release = firmware version string, e.g. "1.23.0"
+  // os.uname().machine = hardware model string, e.g. "ESP32 module with ESP32"
+  auto [state, output] = runPythonCmd(
+      "import sys, os; u = os.uname(); "
+      "print(sys.implementation.name + '|' + u.release + '|' + u.machine)");
+
+  if (state != RUN_STATE::SUCCESS) {
+    INFO("Probe failed: " + output);
+    return result;
+  }
+
+  // Raw REPL wraps stdout as: OK<stdout>\x04<stderr>\x04>
+  // Grab only the stdout portion
+  auto endPos = output.find('\x04');
+  std::string out =
+      (endPos != std::string::npos) ? output.substr(0, endPos) : output;
+
+  // Strip the leading "OK" the raw REPL prepends
+  if (out.rfind("OK", 0) == 0) out = out.substr(2);
+
+  // Trim surrounding whitespace / CR LF
+  auto trimmed = [](std::string s) {
+    s.erase(0, s.find_first_not_of(" \t\r\n"));
+    s.erase(s.find_last_not_of(" \t\r\n") + 1);
+    return s;
+  };
+  out = trimmed(out);
+
+  // Split on '|'
+  auto splitPipe = [](const std::string& s) -> std::vector<std::string> {
+    std::vector<std::string> parts;
+    std::size_t start = 0;
+    std::size_t pos;
+    while ((pos = s.find('|', start)) != std::string::npos) {
+      parts.push_back(s.substr(start, pos - start));
+      start = pos + 1;
+    }
+    parts.push_back(s.substr(start));
+    return parts;
+  };
+
+  auto parts = splitPipe(out);
+  if (parts.size() < 3) {
+    INFO("Probe: unexpected response format: " + out);
+    return result;
+  }
+
+  std::string implName = trimmed(parts[0]);
+  result.firmwareVersion = trimmed(parts[1]);
+  result.hardwareModel = trimmed(parts[2]);
+
+  std::string lower = implName;
+  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+  result.isMicroPython = lower.find("micropython") != std::string::npos;
+
+  INFO("Probe → impl: " + implName + "  fw: " + result.firmwareVersion +
+       "  hw: " + result.hardwareModel);
+
+  return result;
+}
 ReplClient::~ReplClient() { exitRawRepl(); }
 std::pair<RUN_STATE, std::string> ReplClient::runPythonCmd(
     const std::string& code) {
