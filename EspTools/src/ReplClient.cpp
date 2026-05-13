@@ -9,9 +9,9 @@
 #include "Base64.h"
 #include "Logging.h"
 
-namespace ZanaBlocks::EspTools {
+using namespace ZanaBlocks::Utilities;
 
-using namespace Utilities;
+namespace ZanaBlocks::EspTools {
 
 bool ReplClient::putFile(const std::string& localPath,
                          const std::string& remotePath,
@@ -38,7 +38,8 @@ bool ReplClient::putFile(const std::string& localPath,
             static_cast<std::streamsize>(fileSize));
 
   // Open remote file for writing (binary)
-  copyState = run("import ubinascii; _f = open('" + remotePath + "', 'wb')");
+  copyState =
+      runPythonCmd("import ubinascii; _f = open('" + remotePath + "', 'wb')");
   INFO(copyState.second);
 
   if (copyState.first != RUN_STATE::SUCCESS) {
@@ -56,13 +57,13 @@ bool ReplClient::putFile(const std::string& localPath,
     // Decode on-device and write
     std::string cmd = "_f.write(ubinascii.a2b_base64(b'" + b64 + "'))";
 
-    copyState = run(cmd);
+    copyState = runPythonCmd(cmd);
 
     INFO(copyState.second);
 
     if (copyState.first != RUN_STATE::SUCCESS) {
       invokeCallback("Failed to write remote file!");
-      run("_f.close()");
+      runPythonCmd("_f.close()");
       return false;
     }
 
@@ -73,7 +74,7 @@ bool ReplClient::putFile(const std::string& localPath,
   }
 
   // Close remote file
-  run("_f.close(); del _f");
+  runPythonCmd("_f.close(); del _f");
   return true;
 }
 
@@ -146,7 +147,8 @@ ReplClient::ReplClient(const std::shared_ptr<sp_port>& connection)
 };
 
 ReplClient::~ReplClient() { exitRawRepl(); }
-std::pair<RUN_STATE, std::string> ReplClient::run(const std::string& code) {
+std::pair<RUN_STATE, std::string> ReplClient::runPythonCmd(
+    const std::string& code) {
   // Send the code followed by the raw REPL end marker.
   writeAll(code + "\x04");
   return readUntil("\x04>", 3000);

@@ -26,7 +26,7 @@ std::shared_ptr<sp_port> connect(const std::string& port, const int baudRate) {
   sp_set_flowcontrol(serialPort, SP_FLOWCONTROL_NONE);
 
   return std::shared_ptr<sp_port>(serialPort, [](sp_port* serialPort) {
-    if (serialPort) {
+    if (serialPort != nullptr) {
       sp_close(serialPort);
       sp_free_port(serialPort);
     }

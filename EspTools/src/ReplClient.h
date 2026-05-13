@@ -55,7 +55,7 @@ class ReplClient {
    * @return A pair containing the run state (SUCCESS, ERROR, or TIME_OUT) and
    * the output string from the device.
    */
-  std::pair<RUN_STATE, std::string> run(const std::string& code);
+  std::pair<RUN_STATE, std::string> runPythonCmd(const std::string& code);
 
   /**
    * @brief Upload a local file to the device's filesystem. The file is read in
