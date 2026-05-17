@@ -1,7 +1,7 @@
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Concurrent)
 
 configure_file(src/${PROJECT_NAME}.h.in ${PROJECT_NAME}Info.h @ONLY)
 
@@ -27,6 +27,7 @@ add_library(lib${PROJECT_NAME}
 target_link_libraries(lib${PROJECT_NAME}
     Qt6::Core 
     Qt6::Widgets
+    Qt6::Concurrent
     Schema
     Interpreter 
     EspTools
