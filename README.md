@@ -14,6 +14,12 @@ The objective is to simplify, engage, and provide hands-on learning experiences 
 
 [🎥 Demo Video](./assets/demo.webm)
 
+## ⚠️ Safety Notice
+
+This application is provided for educational purposes under the Apache 2.0 License.
+Use with children must be under parental supervision.
+Always use correct resistors and GPIO pins before powering any circuit.
+
 ## ✨ Features
 
 * 🧩 Visual Block Programming

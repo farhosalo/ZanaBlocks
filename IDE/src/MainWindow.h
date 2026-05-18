@@ -32,6 +32,7 @@ class MainWindow : public QMainWindow {
   auto save();
   auto open();
   auto settings();
+  void checkFirstApplicationRun();
 
  private:
   View* mDiagramView{nullptr};

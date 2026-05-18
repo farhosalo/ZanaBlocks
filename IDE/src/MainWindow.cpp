@@ -1,11 +1,14 @@
 #include "MainWindow.h"
 
 #include <QAction>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QGraphicsScene>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QPlainTextEdit>
+#include <QSettings>
 #include <QSplitter>
 #include <QStatusBar>
 #include <QToolBar>
@@ -238,6 +241,39 @@ MainWindow::MainWindow(QWidget* parent)
     auto* node = new LoopNode(true);
     node->setPos(0, 0);
     mDiagramScene->addItem(node);
+
+    checkFirstApplicationRun();
+  }
+}
+void MainWindow::checkFirstApplicationRun() {
+  QSettings settings("ZanaBlocks", "IDE");
+
+  if (!settings.value("safetyNoticeAccepted", false).toBool()) {
+    QMessageBox safetyMessageBox;
+    safetyMessageBox.setWindowTitle("⚠️ Safety Notice");
+    safetyMessageBox.setText(
+        "<b>This application is provided for educational purposes "
+        "only.</b><br><br>"
+        "Use by children must be under <b>parental supervision</b> at all "
+        "times.<br><br>"
+        "The developer is not responsible for any injuries or damages caused "
+        "by "
+        "incorrect wiring, missing resistors, or improper use of electronic "
+        "components.<br><br>"
+        "Provided free and open source under the <b>Apache License 2.0</b>.<br>"
+        "Use at your own risk.<br><br><br>");
+    safetyMessageBox.setIcon(QMessageBox::Warning);
+
+    QCheckBox* dontShowAgainCheckBox = new QCheckBox("Don't show this again");
+    safetyMessageBox.setCheckBox(dontShowAgainCheckBox);
+    safetyMessageBox.setStandardButtons(QMessageBox::Ok);
+    safetyMessageBox.exec();
+
+    if (dontShowAgainCheckBox->isChecked()) {
+      settings.setValue("safetyNoticeAccepted", true);
+    } else {
+      settings.setValue("safetyNoticeAccepted", false);
+    }
   }
 }
 }  // namespace ZanaBlocks::IDE
