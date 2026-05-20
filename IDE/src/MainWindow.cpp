@@ -57,8 +57,10 @@ auto MainWindow::run() {
 
   if (!probeResult.isMicroPython) {
     mLogOutput->appendPlainText(
-        "Device is not running MicroPython! Please flash MicroPython firmware "
-        "to your device.");
+        "Device is not running MicroPython!, press reset (EN/RST) button and "
+        "try again. "
+        "If the problem persists, please flash MicroPython firmware to your "
+        "device.");
     return;
   }
   mLogOutput->appendPlainText(
