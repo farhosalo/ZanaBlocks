@@ -6,6 +6,7 @@
 #include <QFormLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QProgressBar>
 #include <QPushButton>
@@ -148,6 +149,11 @@ bool SettingsDialog::flash() {
         },
         Qt::QueuedConnection);
   };
+  mFlasher->onEnterBootloader = [this]() {
+    QMetaObject::invokeMethod(
+        this, [this]() { shoeEnterBootloaderMessage(); }, Qt::QueuedConnection);
+  };
+
   QtConcurrent::run([this]() {
     enableSettings(false);
     bool success = mFlasher->flash(mPortListCombo->currentText().toStdString(),
@@ -159,5 +165,20 @@ bool SettingsDialog::flash() {
   });
 
   return true;
+}
+void SettingsDialog::shoeEnterBootloaderMessage() {
+  QMessageBox enterBootloaderMessage;
+  enterBootloaderMessage.setWindowTitle("ℹ Enter Bootloader Mode");
+  enterBootloaderMessage.setText(
+      "<b>"
+      "Hold down the Boot button, press the Reset (EN/RST) button, and then "
+      "release both buttons.<br>"
+      "Once this is done, click OK.<br><br>");
+
+  enterBootloaderMessage.setIcon(QMessageBox::Information);
+
+  enterBootloaderMessage.setStandardButtons(QMessageBox::Ok);
+  enterBootloaderMessage.exec();
+  mFlasher->setEnterBootloader();
 }
 }  // namespace ZanaBlocks::IDE

@@ -30,6 +30,8 @@ class SettingsDialog : public QDialog {
 
   bool flash();
 
+  void shoeEnterBootloaderMessage();
+
   QComboBox* mPortListCombo;
   QDialogButtonBox* mButtonBox;
   QProgressBar* mFlashProgressBar;
