@@ -7,11 +7,13 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <vector>
 
+#include "EspTools.h"
 #include "Logging.h"
+#include "SerialPort.h"
 #include "esp_targets.h"
-#include "linux_port.h"  // linux_port_t, linux_uart_ops
 
 #ifndef FAST_BAUD
 #define FAST_BAUD 230400  // safe fallback
@@ -108,26 +110,49 @@ bool EspFlasher::flash(const std::string& device,
   status("Firmware loaded: " + firmwarePath + " (" +
          std::to_string(firmware.size()) + " bytes) ");
 
-  // ── configure the built-in Linux port
-  linux_port_t port{};
-  port.port.ops = &linux_uart_ops;
-  port.device = device.c_str();
-  port.baudrate = DEFAULT_BUAD;
-  port.gpio_mode = LINUX_GPIO_DTR_RTS;  // auto-reset via RTS/DTR (standard
-                                        // CP2102/CH340 boards)
+  auto connection = ZanaBlocks::EspTools::connect(device, DEFAULT_BUAD);
+  if (connection == nullptr) {
+    status("Failed to connect to device: " + device);
+    return false;
+  }
+  auto* port = createSerialPort(connection.get());
+
+  if (!port) {
+    status("Failed to open serial port: " + device);
+    return false;
+  }
+  status("Serial port opened: " + device + " @" + std::to_string(DEFAULT_BUAD) +
+         " baud");
 
   // ── connect ───────────────────────────────────────────────────────────────
   esp_loader_t loader{};
-  if (auto error = esp_loader_init_uart(&loader, &port.port);
+
+  if (auto error = esp_loader_init_uart(&loader, getBaseSerialPort(port));
       error != ESP_LOADER_SUCCESS) {
     status("Failed to init uart: " + std::to_string(error));
     return false;
   }
+  status("UART initialized.");
 
-  status("Connecting on " + device + " @" + std::to_string(port.baudrate) +
+  status("Connecting on " + device + " @" + std::to_string(DEFAULT_BUAD) +
          " baud...");
   esp_loader_connect_args_t conn = ESP_LOADER_CONNECT_DEFAULT();
+  conn.trials = 20;         // default is 10, give more room
+  conn.sync_timeout = 200;  // ms per attempt
 
+  if (onEnterBootloader) {
+    onEnterBootloader();
+    status("Waiting for the user to put the device into bootloader mode...");
+    while (!mEnteredBootloaderMode.load()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+  } else {
+    status("No onEnterBootloader callback provided.");
+    return false;
+  }
+  // Note: esp_loader_connect() internally toggles DTR/RTS to reset the chip
+  // into bootloader mode, so no need to do it ourselves in op_enter_bootloader
   if (auto error = esp_loader_connect(&loader, &conn);
       error != ESP_LOADER_SUCCESS) {
     status("Failed to connect: " + std::to_string(error));
@@ -143,13 +168,13 @@ bool EspFlasher::flash(const std::string& device,
   uint32_t flash_addr = getFlashAddress(chip).value();
 
   // ── bump baud ─────────────────────────────────────────────────────────────
-  if (FAST_BAUD > static_cast<int>(port.baudrate)) {
+  if (FAST_BAUD > static_cast<int>(DEFAULT_BUAD)) {
     if (esp_loader_change_transmission_rate(&loader, FAST_BAUD) ==
         ESP_LOADER_SUCCESS) {
       status("Switched to " + std::to_string(FAST_BAUD) + "baud");
     } else {
       status("Baud rate bump failed, staying at " +
-             std::to_string(port.baudrate) + "baud.");
+             std::to_string(DEFAULT_BUAD) + "baud.");
     }
   } else {
     status("Already at max supported baud rate.");
@@ -162,9 +187,10 @@ bool EspFlasher::flash(const std::string& device,
 
   // ── reboot ────────────────────────────────────────────────────────────────
   esp_loader_reset_target(&loader);
-  status("Resetting");
+  status("Resetting...");
   esp_loader_deinit(&loader);
   status("Done!");
+
   return true;
 }
 

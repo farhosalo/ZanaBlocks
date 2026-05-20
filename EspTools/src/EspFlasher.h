@@ -20,6 +20,7 @@ class EspFlasher {
  public:
   std::function<void(int)> onProgress;
   std::function<void(const std::string&)> onStatus;
+  std::function<void()> onEnterBootloader;
 
   /**
    * @brief Flash firmware to an ESP32 device over a serial port.
@@ -29,6 +30,7 @@ class EspFlasher {
    * @return true if flashing succeeded, false otherwise.
    */
   bool flash(const std::string& device, const std::string& firmwarePath);
+  void setEnterBootloader() { mEnteredBootloaderMode.store(true); }
 
  private:
   Bytes loadFirmware(const std::string& path);
@@ -36,4 +38,5 @@ class EspFlasher {
                      const Bytes& fw);
   void status(const std::string& msg) const;
   void progress(const int progress) const;
+  std::atomic<bool> mEnteredBootloaderMode{false};
 };
