@@ -5,21 +5,26 @@
 #include <algorithm>
 #include <fstream>
 #include <stdexcept>
+#include <thread>
 #include <vector>
 
 #include "Base64.h"
 #include "Logging.h"
 
-using namespace ZanaBlocks::Utilities;
-
 namespace ZanaBlocks::EspTools {
+using Utilities::base64Encode;
+
+auto constexpr HUNDRED =
+    100;  // Give the device time to reboot before the caller tries to reconnect
 
 bool ReplClient::putFile(const std::string& localPath,
                          const std::string& remotePath,
                          ProgressCallback callback) {
   // Helper to invoke the progress callback if it's set
-  auto invokeCallback = [&](std::string message) {
-    if (callback) callback(std::move(message));
+  auto invokeCallback = [&](const std::string& message) {
+    if (callback) {
+      callback(message);
+    }
   };
 
   std::pair<RUN_STATE, std::string> copyState;
@@ -35,7 +40,7 @@ bool ReplClient::putFile(const std::string& localPath,
   file.seekg(0);
 
   std::vector<uint8_t> contents(fileSize);
-  file.read(reinterpret_cast<char*>(contents.data()),
+  file.read(reinterpret_cast<char*>(contents.data()),  // NOLINT
             static_cast<std::streamsize>(fileSize));
 
   // Open remote file for writing (binary)
@@ -51,12 +56,13 @@ bool ReplClient::putFile(const std::string& localPath,
   // Send in chunks, base64-encoded to keep serial clean
   std::size_t sent = 0;
   while (sent < fileSize) {
-    std::size_t chunkLen = std::min(CHUNK_SIZE, fileSize - sent);
+    const std::size_t chunkLen = std::min(CHUNK_SIZE, fileSize - sent);
 
-    std::string b64 = base64Encode(contents.data() + sent, chunkLen);
+    // NOLINTNEXTLINE [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+    const std::string b64 = base64Encode(contents.data() + sent, chunkLen);
 
     // Decode on-device and write
-    std::string cmd = "_f.write(ubinascii.a2b_base64(b'" + b64 + "'))";
+    const std::string cmd = "_f.write(ubinascii.a2b_base64(b'" + b64 + "'))";
 
     copyState = runPythonCmd(cmd);
 
@@ -71,7 +77,7 @@ bool ReplClient::putFile(const std::string& localPath,
     sent += chunkLen;
     invokeCallback("Sent " + std::to_string(sent) + "/" +
                    std::to_string(fileSize) + " bytes" + "(" +
-                   std::to_string((sent * 100) / fileSize) + "%)");
+                   std::to_string((sent * HUNDRED) / fileSize) + "%)");
   }
 
   // Close remote file
@@ -80,16 +86,20 @@ bool ReplClient::putFile(const std::string& localPath,
 }
 
 void ReplClient::reset() {
-  try {
-    writeAll("import machine; machine.reset()\x04");
-  } catch (...) {
-  }
+  // We attempt to send the reset command. If the serial write fails (e.g.
+  // device already disconnected or rebooting), we log the error but continue to
+  // the sleep period to allow the hardware state to settle.
+  writeAll("import machine; machine.reset()\x04");
+
   // Give the device time to reboot before the caller tries to reconnect
-  ::usleep(1'500'000);
+  auto constexpr RESET_PAUSE_MS = 1'500;
+  std::this_thread::sleep_for(std::chrono::milliseconds(RESET_PAUSE_MS));
 }
 
 void ReplClient::writeAll(const std::string& data) {
-  sp_blocking_write(mSerialConnection.get(), data.data(), data.size(), 1000);
+  const auto TIMEOUT_MS = 1000;
+  sp_blocking_write(mSerialConnection.get(), data.data(), data.size(),
+                    TIMEOUT_MS);
 }
 
 std::pair<RUN_STATE, std::string> ReplClient::readUntil(
@@ -103,25 +113,26 @@ std::pair<RUN_STATE, std::string> ReplClient::readUntil(
   // execution resulted in an error or success. Note: the marker is expected to
   // be at the end of the output, so we check for it in the buffer to know when
   // to stop reading.
-  char tmp[64];
+  auto constexpr CHUNK_SIZE = 64;
+  std::array<char, CHUNK_SIZE> tmp{};
   while (buffer.find(marker) == std::string::npos) {
     // Read a chunk of data from the serial port with a timeout. We use
     // sp_blocking_read which will wait until data is available or the timeout
     // is reached. The data is read into a temporary buffer and then appended to
     // the main buffer.
-    int n =
-        sp_blocking_read(mSerialConnection.get(), tmp, sizeof(tmp), timeoutMs);
-    if (n < 0) {  // Error occurred during read
+    const int numberOfReadBytes = sp_blocking_read(
+        mSerialConnection.get(), tmp.data(), tmp.size(), timeoutMs);
+    if (numberOfReadBytes < 0) {  // Error occurred during read
       buffer = "Failed to read from REPL";
       ERROR(buffer);
       return {RUN_STATE::ERROR, buffer};
     }
-    if (n == 0) {  // Timeout occurred
+    if (numberOfReadBytes == 0) {  // Timeout occurred
       buffer = "REPL read timeout";
       ERROR(buffer);
       return {RUN_STATE::TIME_OUT, buffer};
     }
-    buffer.append(tmp, static_cast<std::size_t>(n));
+    buffer.append(tmp.data(), static_cast<std::size_t>(numberOfReadBytes));
   }
 
   if (buffer.find("Error") != std::string::npos ||
@@ -135,7 +146,8 @@ std::pair<RUN_STATE, std::string> ReplClient::readUntil(
 
 void ReplClient::enterRawRepl() {
   writeAll("\x03");
-  sp_blocking_read(mSerialConnection.get(), nullptr, 0, 100);  // 100ms pause
+  sp_blocking_read(mSerialConnection.get(), nullptr, 0,
+                   HUNDRED);  // 100ms pause
 
   // Clear any existing input/output buffers.
   writeAll("\x01");
@@ -169,26 +181,28 @@ ProbeResult ReplClient::probe() {
       (endPos != std::string::npos) ? output.substr(0, endPos) : output;
 
   // Strip the leading "OK" the raw REPL prepends
-  if (out.rfind("OK", 0) == 0) out = out.substr(2);
+  if (out.rfind("OK", 0) == 0) {
+    out = out.substr(2);
+  }
 
   // Trim surrounding whitespace / CR LF
-  auto trimmed = [](std::string s) {
-    s.erase(0, s.find_first_not_of(" \t\r\n"));
-    s.erase(s.find_last_not_of(" \t\r\n") + 1);
-    return s;
+  auto trimmed = [](std::string str) {
+    str.erase(0, str.find_first_not_of(" \t\r\n"));
+    str.erase(str.find_last_not_of(" \t\r\n") + 1);
+    return str;
   };
   out = trimmed(out);
 
   // Split on '|'
-  auto splitPipe = [](const std::string& s) -> std::vector<std::string> {
+  auto splitPipe = [](const std::string& split) -> std::vector<std::string> {
     std::vector<std::string> parts;
     std::size_t start = 0;
-    std::size_t pos;
-    while ((pos = s.find('|', start)) != std::string::npos) {
-      parts.push_back(s.substr(start, pos - start));
+    std::size_t pos = 0;
+    while ((pos = split.find('|', start)) != std::string::npos) {
+      parts.push_back(split.substr(start, pos - start));
       start = pos + 1;
     }
-    parts.push_back(s.substr(start));
+    parts.push_back(split.substr(start));
     return parts;
   };
 
@@ -198,7 +212,7 @@ ProbeResult ReplClient::probe() {
     return result;
   }
 
-  std::string implName = trimmed(parts[0]);
+  const std::string implName = trimmed(parts[0]);
   result.firmwareVersion = trimmed(parts[1]);
   result.hardwareModel = trimmed(parts[2]);
 
@@ -214,8 +228,9 @@ ProbeResult ReplClient::probe() {
 ReplClient::~ReplClient() { exitRawRepl(); }
 std::pair<RUN_STATE, std::string> ReplClient::runPythonCmd(
     const std::string& code) {
+  auto constexpr TimeoutMs = 3000;
   // Send the code followed by the raw REPL end marker.
   writeAll(code + "\x04");
-  return readUntil("\x04>", 3000);
+  return readUntil("\x04>", TimeoutMs);
 }
 }  // namespace ZanaBlocks::EspTools

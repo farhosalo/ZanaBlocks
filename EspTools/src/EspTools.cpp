@@ -2,8 +2,6 @@
 
 #include "Logging.h"
 
-using namespace ZanaBlocks::Utilities;
-
 namespace ZanaBlocks::EspTools {
 
 std::shared_ptr<sp_port> connect(const std::string& port, const int baudRate) {
@@ -19,18 +17,20 @@ std::shared_ptr<sp_port> connect(const std::string& port, const int baudRate) {
     return nullptr;
   }
 
+  auto constexpr DATA_BITS = 8;
+
   sp_set_baudrate(serialPort, baudRate);
-  sp_set_bits(serialPort, 8);
+  sp_set_bits(serialPort, DATA_BITS);
   sp_set_parity(serialPort, SP_PARITY_NONE);
   sp_set_stopbits(serialPort, 1);
   sp_set_flowcontrol(serialPort, SP_FLOWCONTROL_NONE);
 
-  return std::shared_ptr<sp_port>(serialPort, [](sp_port* serialPort) {
-    if (serialPort != nullptr) {
-      sp_close(serialPort);
-      sp_free_port(serialPort);
-    }
-  });
+  return {serialPort, [](sp_port* serialPort) {
+            if (serialPort != nullptr) {
+              sp_close(serialPort);
+              sp_free_port(serialPort);
+            }
+          }};
 }
 
 std::vector<std::string> getUsbSerialPorts() {
@@ -44,8 +44,8 @@ std::vector<std::string> getUsbSerialPorts() {
     return usbPorts;
   }
 
-  for (int i = 0; ports[i] != nullptr; i++) {
-    const struct sp_port* port = ports[i];
+  for (int i = 0; ports[i] != nullptr; i++) {  // NOLINT
+    const struct sp_port* port = ports[i];     // NOLINT
 
     // Only care about USB transport
     if (sp_get_port_transport(port) == SP_TRANSPORT_USB) {

@@ -6,6 +6,7 @@
 
 #include "esp_loader.h"
 
+namespace ZanaBlocks::EspTools {
 using Bytes = std::vector<uint8_t>;
 
 /**
@@ -18,9 +19,15 @@ using Bytes = std::vector<uint8_t>;
  */
 class EspFlasher {
  public:
-  std::function<void(int)> onProgress;
-  std::function<void(const std::string&)> onStatus;
-  std::function<void()> onEnterBootloader;
+  void setOnProgress(std::function<void(int)> callback) {
+    mOnProgress = std::move(callback);
+  }
+  void setOnStatus(std::function<void(const std::string&)> callback) {
+    mOnStatus = std::move(callback);
+  }
+  void setOnEnterBootloader(std::function<void()> callback) {
+    mOnEnterBootloader = std::move(callback);
+  }
 
   /**
    * @brief Flash firmware to an ESP32 device over a serial port.
@@ -34,9 +41,14 @@ class EspFlasher {
 
  private:
   Bytes loadFirmware(const std::string& path);
-  void flashFirmware(esp_loader_t* loader, const uint32_t addr,
-                     const Bytes& fw);
+  void flashFirmware(esp_loader_t* loader, uint32_t addr,
+                     const Bytes& firmware);
   void status(const std::string& msg) const;
-  void progress(const int progress) const;
+  void progress(int progress) const;
   std::atomic<bool> mEnteredBootloaderMode{false};
+
+  std::function<void(int32_t)> mOnProgress;
+  std::function<void(const std::string&)> mOnStatus;
+  std::function<void()> mOnEnterBootloader;
 };
+}  // namespace ZanaBlocks::EspTools

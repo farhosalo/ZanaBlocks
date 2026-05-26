@@ -17,7 +17,7 @@ static constexpr int DEFAULT_BAUD_RATE = 115200;
  * connection failed.
  */
 std::shared_ptr<sp_port> connect(const std::string& port,
-                                 const int baudRate = DEFAULT_BAUD_RATE);
+                                 int baudRate = DEFAULT_BAUD_RATE);
 
 /**
  * @brief Lists all available USB serial ports on the system.
