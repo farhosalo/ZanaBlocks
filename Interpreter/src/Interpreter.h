@@ -11,7 +11,7 @@ namespace ZanaBlocks::Interpreter {
  */
 class Interpreter {
   using Lines = std::vector<std::pair<uint32_t, std::string>>;
-  static auto constexpr indentSize{4};
+  static auto constexpr INDENT_SIZE{4};
 
  public:
   /**
