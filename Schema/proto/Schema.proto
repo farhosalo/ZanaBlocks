@@ -3,8 +3,8 @@ syntax = "proto3";
 package ZanaBlocks.Schema;
 
 message Position {
-    int32 x = 1; // X coordinate
-    int32 y = 2; // Y coordinate
+    double x = 1; // X coordinate
+    double y = 2; // Y coordinate
 }
 
 // A print action that can be used to output a message.
