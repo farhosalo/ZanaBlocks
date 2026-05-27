@@ -1,8 +1,7 @@
 #pragma once
 #include <QDialog>
 
-namespace ZanaBlocks {
-namespace IDE {
+namespace ZanaBlocks::IDE {
 
 class AboutDialog : public QDialog {
   Q_OBJECT
@@ -10,5 +9,4 @@ class AboutDialog : public QDialog {
  public:
   explicit AboutDialog(QWidget* parent = nullptr);
 };
-}  // namespace IDE
-}  // namespace ZanaBlocks
+}  // namespace ZanaBlocks::IDE

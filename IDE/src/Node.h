@@ -17,14 +17,13 @@ namespace ZanaBlocks::IDE {
  */
 class Node : public QGraphicsItem {
  public:
-  Node(const QString& label, QGraphicsItem* parent = nullptr);
-  ~Node() override = default;
+  explicit Node(QString label, QGraphicsItem* parent = nullptr);
 
   /**
    * @brief Returns the bounding rectangle of the node.
    * @return The bounding rectangle.
    */
-  QRectF boundingRect() const override;
+  [[nodiscard]] QRectF boundingRect() const override;
 
   /**
    * @brief Paints the node on the scene.
@@ -54,7 +53,7 @@ class Node : public QGraphicsItem {
    * @brief Returns the list of ports associated with this node.
    * @return The list of ports.
    */
-  const QList<NodePort*>& getPorts() const { return ports; }
+  [[nodiscard]] const QList<NodePort*>& getPorts() const { return mPorts; }
 
   /** @brief Returns the protobuf message schema associated
    *            with this node.
@@ -66,7 +65,7 @@ class Node : public QGraphicsItem {
    *            with this node (const version).
    * @return A const reference to the protobuf message.
    */
-  virtual const google::protobuf::Message& schema() const = 0;
+  [[nodiscard]] virtual const google::protobuf::Message& schema() const = 0;
 
   /**
    * @brief Returns the description of the node.
@@ -75,7 +74,7 @@ class Node : public QGraphicsItem {
   [[nodiscard]] virtual std::string_view getDescription() const = 0;
 
  protected:
-  QVariant itemChange(const GraphicsItemChange change,
+  QVariant itemChange(GraphicsItemChange change,
                       const QVariant& value) override;
   void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
   void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
@@ -89,14 +88,15 @@ class Node : public QGraphicsItem {
 
   void addHint();
 
-  /** @brief The list of ports associated with the node. */
-  QList<NodePort*> ports;
-
  private:
   /** @brief The label for the node. */
   QString mLabel{"Node"};
 
+  static constexpr QColor defaultColor{100, 150, 240};
   /* Node properties */
-  QColor mColor{QColor(100, 150, 240)};
+  QColor mColor{defaultColor};
+
+  /** @brief The list of ports associated with the node. */
+  QList<NodePort*> mPorts;
 };
 }  // namespace ZanaBlocks::IDE

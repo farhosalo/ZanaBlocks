@@ -2,8 +2,9 @@
 
 namespace ZanaBlocks::IDE {
 
-PrintNode::PrintNode(const std::string& message, QGraphicsItem* parent)
-    : BaseNodeSchema<Schema::Print>("🖨️", parent), mMessage(message) {
+PrintNode::PrintNode(std::string message, QGraphicsItem* parent)
+    : BaseNodeSchema<Schema::Print>("🖨️", parent),
+      mMessage(std::move(message)) {
   addInputPort();
   addHint();
 }

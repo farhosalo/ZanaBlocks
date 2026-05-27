@@ -8,23 +8,31 @@
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPlainTextEdit>
+#include <QPointer>
 #include <QProgressBar>
 #include <QPushButton>
 #include <QSettings>
 #include <QtConcurrent>
 
 #include "EspTools.h"
+#include "Logging.h"
 
 namespace ZanaBlocks::IDE {
-SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
+SettingsDialog::SettingsDialog(QWidget* parent)
+    : QDialog(parent),
+      mButtonBox(new QDialogButtonBox(
+          QDialogButtonBox::Save | QDialogButtonBox::Cancel, this)),
+      mPortListCombo(new QComboBox(this)),
+      mFirmwarePathEdit(new QLineEdit(this)),
+      mFlashButton(new QPushButton("Flash", this)),
+      mFlashProgressBar(new QProgressBar(this)),
+      mFlashLogs(new QPlainTextEdit(this)) {
   setWindowTitle("Settings");
 
   auto* layout = new QFormLayout(this);
   addPortSettings(layout);
   addFlashSettings(layout);
 
-  mButtonBox = new QDialogButtonBox(
-      QDialogButtonBox::Save | QDialogButtonBox::Cancel, this);
   layout->addRow(mButtonBox);
 
   connect(mButtonBox, &QDialogButtonBox::accepted, this, [this] {
@@ -36,11 +44,12 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
   setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 }
 void SettingsDialog::keyPressEvent(QKeyEvent* event) {
-  if (event->key() != Qt::Key_Escape) QDialog::keyPressEvent(event);
+  if (event->key() != Qt::Key_Escape) {
+    QDialog::keyPressEvent(event);
+  }
 }
-void SettingsDialog::saveSettings() { QSettings settings; }
+void SettingsDialog::saveSettings() {}
 void SettingsDialog::addPortSettings(QFormLayout* layout) {
-  mPortListCombo = new QComboBox(this);
   mPortListCombo->setObjectName("PortList");
 
   auto* refreshBtn = new QPushButton(tr("Refresh"));
@@ -50,7 +59,7 @@ void SettingsDialog::addPortSettings(QFormLayout* layout) {
     auto ports = EspTools::getUsbSerialPorts();
 
     QStringList list;
-    list.reserve(ports.size());
+    list.reserve(static_cast<qsizetype>(ports.size()));
     for (const auto& str : ports) {
       list.append(QString::fromStdString(str));
     }
@@ -78,13 +87,11 @@ void SettingsDialog::addFlashSettings(QFormLayout* layout) {
 
   // Firmware row
   auto* fwRow = new QHBoxLayout;
-  mFirmwarePathEdit = new QLineEdit;
   mFirmwarePathEdit->setPlaceholderText("Path to .bin firmware…");
   mFirmwarePathEdit->setEnabled(false);
 
   auto* browseBtn = new QPushButton("Browse…");
 
-  mFlashButton = new QPushButton("Flash");
   mFlashButton->setEnabled(false);
 
   fwRow->addWidget(new QLabel("Firmware:"));
@@ -94,14 +101,14 @@ void SettingsDialog::addFlashSettings(QFormLayout* layout) {
   layout->addRow(fwRow);
 
   // Progress
-  mFlashProgressBar = new QProgressBar;
-  mFlashProgressBar->setRange(0, 100);
+  auto constexpr progressMaxValue = 100;
+  mFlashProgressBar->setRange(0, progressMaxValue);
   layout->addWidget(mFlashProgressBar);
 
   // Log
-  mFlashLogs = new QPlainTextEdit;
+  auto constexpr maxLogBlockCount = 500;
   mFlashLogs->setReadOnly(true);
-  mFlashLogs->setMaximumBlockCount(500);
+  mFlashLogs->setMaximumBlockCount(maxLogBlockCount);
   layout->addWidget(mFlashLogs);
 
   connect(mFlashButton, &QPushButton::clicked, this, [this]() {
@@ -136,31 +143,48 @@ bool SettingsDialog::flash() {
   }
   mButtonBox->button(QDialogButtonBox::Cancel)->setEnabled(false);
 
-  mFlasher->onProgress = [this](int progress) {
+  mFlasher->setOnProgress([this](int progress) {
     QMetaObject::invokeMethod(
         this, [this, progress]() { mFlashProgressBar->setValue(progress); },
         Qt::QueuedConnection);
-  };
-  mFlasher->onStatus = [this](const std::string& msg) {
+  });
+
+  // NOLINTBEGIN  [bugprone-exception-escape]
+  mFlasher->setOnStatus([this](const std::string& msg) {
+    const QPointer<SettingsDialog> self(this);
     QMetaObject::invokeMethod(
         this,
-        [this, msg]() {
-          mFlashLogs->appendPlainText(QString::fromStdString(msg));
+        [self, msg]() {
+          if (self == nullptr || self->mFlashLogs == nullptr) {
+            ERROR(
+                "SettingsDialog was destroyed while flashing, log update "
+                "skipped: "
+                << msg);
+            return;
+          }
+          try {
+            self->mFlashLogs->appendPlainText(QString::fromStdString(msg));
+          } catch (const std::exception& e) {
+            ERROR("Exception while updating flash logs: " << e.what());
+          }
         },
         Qt::QueuedConnection);
-  };
-  mFlasher->onEnterBootloader = [this]() {
+  });
+  // NOLINTEND
+
+  mFlasher->setOnEnterBootloader([this]() {
     QMetaObject::invokeMethod(
         this, [this]() { shoeEnterBootloaderMessage(); }, Qt::QueuedConnection);
-  };
+  });
 
-  QtConcurrent::run([this]() {
+  QtConcurrent::run([this]() {  // NOLINT [clang-diagnostic-unused-result]
     enableSettings(false);
-    bool success = mFlasher->flash(mPortListCombo->currentText().toStdString(),
-                                   mFirmwarePathEdit->text().toStdString());
+    const bool success =
+        mFlasher->flash(mPortListCombo->currentText().toStdString(),
+                        mFirmwarePathEdit->text().toStdString());
     enableSettings(true);
     QMetaObject::invokeMethod(
-        this, [this, success]() { qDebug() << "Finished:" << success; },
+        this, [success]() { qDebug() << "Finished:" << success; },
         Qt::QueuedConnection);
   });
 

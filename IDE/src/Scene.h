@@ -32,7 +32,6 @@ class Scene : public QGraphicsScene {
   Q_OBJECT
  public:
   explicit Scene(QObject* parent = nullptr);
-  ~Scene() override = default;
 
   /**
    * @brief Begins a new connection from the specified port.
@@ -54,10 +53,10 @@ class Scene : public QGraphicsScene {
 
   /**
    * @brief Creates a new connection between two ports.
-   * @param from The starting port for the connection.
-   * @param to The ending port for the connection.
+   * @param fromPort The starting port for the connection.
+   * @param toPort The ending port for the connection.
    */
-  void createConnection(NodePort* from, NodePort* to);
+  void createConnection(NodePort* fromPort, NodePort* toPort);
 
   /**
    * @brief Creates a new item of the specified type at the given position.
@@ -85,27 +84,29 @@ class Scene : public QGraphicsScene {
    * @param loop The LoopNode to serialize.
    * @param loopSchema The Protobuf Loop message to populate.
    */
-  void getLoopSchema(const Node* loop, Schema::Loop* loopSchema);
+  static void getLoopSchema(const Node* loop, Schema::Loop* loopSchema);
 
   /** @brief Populates a Print schema from a PrintNode.
    * * @param printNode The PrintNode to serialize.
    * @param printSchema The Protobuf Print message to populate.
    */
-  void getPrintSchema(const PrintNode* printNode, Schema::Print* printSchema);
+  static void getPrintSchema(const PrintNode* printNode,
+                             Schema::Print* printSchema);
 
   /**
    * * @brief Populates a Sleep schema from a SleepNode.
    * @param sleepNode The SleepNode to serialize.
    * @param sleepSchema The Protobuf Sleep message to populate.
    */
-  void getSleepSchema(const SleepNode* sleepNode, Schema::Sleep* sleepSchema);
+  static void getSleepSchema(const SleepNode* sleepNode,
+                             Schema::Sleep* sleepSchema);
 
   /**
    * * @brief Populates an LED schema from an LedNode.
    * @param ledNode The LedNode to serialize.
    * @param ledSchema The Protobuf LED message to populate.
    */
-  void getLedSChema(const LedNode* ledNode, Schema::LED* ledSchema);
+  static void getLedSChema(const LedNode* ledNode, Schema::LED* ledSchema);
 
   /** @brief Deletes a connection and cleans up its references.
    * @param conn The connection to delete.

@@ -1,10 +1,11 @@
 #include "LogOutput.h"
 
 #include <QStyle>
+#include <memory>
 
 namespace ZanaBlocks::IDE {
 void LogOutput::contextMenuEvent(QContextMenuEvent* event) {
-  auto* menu = createStandardContextMenu();
+  std::unique_ptr<QMenu> menu(createStandardContextMenu());
 
   auto* deleteAllAction =
       new QAction(style()->standardIcon(QStyle::SP_LineEditClearButton),
@@ -17,8 +18,5 @@ void LogOutput::contextMenuEvent(QContextMenuEvent* event) {
 
   // Show the context menu at the position of the event
   menu->exec(event->globalPos());
-
-  // Clean up the menu after it's closed
-  delete menu;
 }
 }  // namespace ZanaBlocks::IDE

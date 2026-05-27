@@ -32,16 +32,15 @@ class MainWindow : public QMainWindow {
   auto save();
   auto open();
   auto settings();
-  void checkFirstApplicationRun();
+  static void checkFirstApplicationRun();
 
- private:
   View* mDiagramView{nullptr};
   Scene* mDiagramScene{nullptr};
   LogOutput* mLogOutput{nullptr};
   QToolBar* mSidebar{nullptr};
   LoopItem* mMainLoop{nullptr};
 
-  std::string mSerialPort{""};
+  std::string mSerialPort;
   std::shared_ptr<Schema::Root> mSchema;
 };
 }  // namespace IDE

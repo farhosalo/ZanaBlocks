@@ -2,9 +2,7 @@
 #include "BaseNodeSchema.h"
 #include "Schema.pb.h"
 
-namespace ZanaBlocks {
-
-namespace IDE {
+namespace ZanaBlocks::IDE {
 
 /**
  * @brief Represents a child loop node in the visual programming diagram.
@@ -45,5 +43,4 @@ class LoopNode : public BaseNodeSchema<Schema::Loop> {
   bool mIsMainLoop{false};
   uint32_t mIterations{0};
 };
-}  // namespace IDE
-}  // namespace ZanaBlocks
+}  // namespace ZanaBlocks::IDE

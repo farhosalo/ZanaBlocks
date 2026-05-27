@@ -9,8 +9,7 @@ namespace ZanaBlocks::IDE {
  */
 class SleepNode : public BaseNodeSchema<Schema::Sleep> {
  public:
-  explicit SleepNode(const uint32_t sleepTime = 0,
-                     QGraphicsItem* parent = nullptr);
+  explicit SleepNode(uint32_t sleepTime = 0, QGraphicsItem* parent = nullptr);
 
   /**
    * @brief Returns the sleep time.

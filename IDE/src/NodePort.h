@@ -2,7 +2,6 @@
 #include <QGraphicsEllipseItem>
 
 #include "NodeConnector.h"
-#include "NodePort.h"
 
 namespace ZanaBlocks::IDE {
 class Scene;
@@ -11,10 +10,11 @@ class Node;
 /**
  * @brief Represents a port on a node that can be connected to other ports.
  */
-enum class PortType : uint8_t {
-  Input,         ///< Single-connector input port (only one connection allowed)
-  SingleOutput,  ///< Single-connector output port (only one connection allowed)
-  MultiOutput    ///< Multi-connector output port (multiple connections allowed)
+enum class PORT_TYPE : uint8_t {
+  INPUT,          ///< Single-connector input port (only one connection allowed)
+  SINGLE_OUTPUT,  ///< Single-connector output port (only one connection
+                  ///< allowed)
+  MULTI_OUTPUT  ///< Multi-connector output port (multiple connections allowed)
 };
 
 /**
@@ -24,8 +24,7 @@ enum class PortType : uint8_t {
  */
 class NodePort : public QGraphicsEllipseItem {
  public:
-  NodePort(PortType type, QGraphicsItem* parent = nullptr);
-  ~NodePort() override = default;
+  explicit NodePort(PORT_TYPE type, QGraphicsItem* parent = nullptr);
 
   /**
    * @brief Adds a connection to this port.
@@ -37,7 +36,9 @@ class NodePort : public QGraphicsEllipseItem {
    * @brief Returns the list of connections associated with this port.
    * @return The list of connections.
    */
-  const QList<NodeConnector*>& connections() const { return mConnections; }
+  [[nodiscard]] const QList<NodeConnector*>& connections() const {
+    return mConnections;
+  }
 
   /**
    * @brief Removes a connection from this port.
@@ -49,25 +50,26 @@ class NodePort : public QGraphicsEllipseItem {
    * @brief Returns the parent node of this port.
    * @return The parent node, or nullptr if the parent is not a Node.
    */
-  Node* parentNode() const;
+  [[nodiscard]] Node* parentNode() const;
 
   /**
    * @brief Returns the type of this port (SingleConnectorPort or
    * MultiConnectorPort).
    * @return The type of this port.
    */
-  PortType getType() const { return mType; }
+  [[nodiscard]] PORT_TYPE getType() const { return mType; }
 
  protected:
-  void hoverEnterEvent(QGraphicsSceneHoverEvent*) override;
-  void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
+  void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+  void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
   void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
 
+ private:
   /** @brief The list of connections associated with this port. */
   QList<NodeConnector*> mConnections;
 
   /** @brief The type of this port (SingleConnectorPort or MultiConnectorPort).
    */
-  PortType mType;
+  PORT_TYPE mType;
 };
 }  // namespace ZanaBlocks::IDE

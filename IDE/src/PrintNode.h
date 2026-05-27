@@ -9,8 +9,7 @@ namespace ZanaBlocks::IDE {
  */
 class PrintNode : public BaseNodeSchema<Schema::Print> {
  public:
-  explicit PrintNode(const std::string& message = "",
-                     QGraphicsItem* parent = nullptr);
+  explicit PrintNode(std::string message = "", QGraphicsItem* parent = nullptr);
 
   /**
    * @brief Returns the message to be printed.

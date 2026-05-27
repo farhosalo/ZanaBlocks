@@ -5,8 +5,7 @@
 class QListWidget;
 class QTextEdit;
 
-namespace ZanaBlocks {
-namespace IDE {
+namespace ZanaBlocks::IDE {
 
 class LicensesDialog : public QDialog {
   Q_OBJECT
@@ -21,5 +20,4 @@ class LicensesDialog : public QDialog {
   QTextEdit* mTextEdit;
 };
 
-}  // namespace IDE
-}  // namespace ZanaBlocks
+}  // namespace ZanaBlocks::IDE

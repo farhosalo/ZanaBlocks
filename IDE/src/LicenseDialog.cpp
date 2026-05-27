@@ -7,17 +7,18 @@
 #include <QTextEdit>
 #include <QTextStream>
 
-namespace ZanaBlocks {
-namespace IDE {
+namespace ZanaBlocks::IDE {
+auto constexpr WINDOW_WIDTH{900};
+auto constexpr WINDOW_HEIGHT{600};
 
-LicensesDialog::LicensesDialog(QWidget* parent) : QDialog(parent) {
+LicensesDialog::LicensesDialog(QWidget* parent)
+    : QDialog(parent),
+      mListWidget(new QListWidget(this)),
+      mTextEdit(new QTextEdit(this)) {
   setWindowTitle("Open Source Licenses");
-  resize(900, 600);
+  resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 
   auto* layout = new QHBoxLayout(this);
-
-  mListWidget = new QListWidget(this);
-  mTextEdit = new QTextEdit(this);
 
   mTextEdit->setReadOnly(true);
 
@@ -58,5 +59,4 @@ void LicensesDialog::loadLicense(const QString& filePath) {
   mTextEdit->setPlainText(stream.readAll());
 }
 
-}  // namespace IDE
-}  // namespace ZanaBlocks
+}  // namespace ZanaBlocks::IDE
