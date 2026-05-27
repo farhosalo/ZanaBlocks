@@ -10,6 +10,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Disable C++ Modules support, as it can cause issues with some dependencies and is not currently used in this project.
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 add_compile_definitions(
     QT_NO_KEYWORDS          # Avoid signal/slot macro conflicts

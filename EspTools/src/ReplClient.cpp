@@ -226,7 +226,15 @@ ProbeResult ReplClient::probe() {
 
   return result;
 }
-ReplClient::~ReplClient() { exitRawRepl(); }
+ReplClient::~ReplClient() noexcept {
+  try {
+    exitRawRepl();
+  } catch (const std::exception& e) {
+    ERROR("ReplClient destructor exception: " << e.what());
+  } catch (...) {
+    ERROR("ReplClient destructor unknown exception");
+  }
+}
 std::pair<RUN_STATE, std::string> ReplClient::runPythonCmd(
     const std::string& code) {
   auto constexpr TimeoutMs = 3000;
