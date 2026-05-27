@@ -20,13 +20,13 @@
 namespace ZanaBlocks::IDE {
 SettingsDialog::SettingsDialog(QWidget* parent)
     : QDialog(parent),
+      mPortListCombo(new QComboBox(this)),
       mButtonBox(new QDialogButtonBox(
           QDialogButtonBox::Save | QDialogButtonBox::Cancel, this)),
-      mPortListCombo(new QComboBox(this)),
-      mFirmwarePathEdit(new QLineEdit(this)),
-      mFlashButton(new QPushButton("Flash", this)),
       mFlashProgressBar(new QProgressBar(this)),
-      mFlashLogs(new QPlainTextEdit(this)) {
+      mFlashLogs(new QPlainTextEdit(this)),
+      mFirmwarePathEdit(new QLineEdit(this)),
+      mFlashButton(new QPushButton("Flash", this)) {
   setWindowTitle("Settings");
 
   auto* layout = new QFormLayout(this);

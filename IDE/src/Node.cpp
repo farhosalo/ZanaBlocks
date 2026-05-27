@@ -34,7 +34,6 @@ void Node::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
   const bool selected = (option->state & QStyle::State_Selected) != 0;
 
   QColor constexpr shadowColor{0, 0, 0, 40};
-  auto constexpr shadowBlurRadius{5.0};
   auto constexpr Radius{8.0};
 
   // Shadow
