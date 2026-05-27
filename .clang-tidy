@@ -13,6 +13,7 @@ Checks:
   - '-misc-include-cleaner'
   - '-modernize-use-trailing-return-type'
   - '-misc-no-recursion'
+  - '-misc-override-with-different-visibility'
   - '-google-readability-todo'
 
 CheckOptions:
