@@ -49,9 +49,9 @@ else()
 
     pkg_check_modules(SERIALPORT REQUIRED libserialport)
 
-    target_include_directories(${PROJECT_NAME} PRIVATE
+    target_include_directories(${PROJECT_NAME}  SYSTEM PRIVATE
         ${SERIALPORT_INCLUDE_DIRS}
-        esp-serial-flasher
+        # esp-serial-flasher
     )
     target_link_directories(${PROJECT_NAME} PRIVATE
         ${SERIALPORT_LIBRARY_DIRS}
@@ -81,7 +81,7 @@ add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_format)
 
 # Integrate clang-tidy with the build process of the main target
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}"
+    CXX_CLANG_TIDY "${CLANG_TIDY_EXE};--header-filter=${CMAKE_CURRENT_SOURCE_DIR}/.*" 
 )
 
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)

@@ -12,15 +12,21 @@ View::View(Scene* scene, QWidget* parent)
 }
 
 void View::dragEnterEvent(QDragEnterEvent* event) {
-  if (event->mimeData()->hasText()) event->acceptProposedAction();
+  if (event->mimeData()->hasText()) {
+    event->acceptProposedAction();
+  }
 }
 
 void View::dragMoveEvent(QDragMoveEvent* event) {
-  if (event->mimeData()->hasText()) event->acceptProposedAction();
+  if (event->mimeData()->hasText()) {
+    event->acceptProposedAction();
+  }
 }
 
 void View::dropEvent(QDropEvent* event) {
-  if (!event->mimeData()->hasText()) return;
+  if (!event->mimeData()->hasText()) {
+    return;
+  }
 
   // Map viewport pixel position → scene coordinates
   const QPointF scenePos = mapToScene(event->position().toPoint());

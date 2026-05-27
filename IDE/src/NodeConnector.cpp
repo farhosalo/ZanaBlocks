@@ -13,25 +13,38 @@ NodeConnector::NodeConnector(NodePort* start, NodePort* end)
   updatePath();
 }
 void NodeConnector::updatePath() {
-  QPointF startPoint = mStartPort->scenePos();
-  QPointF endPoint = mEndPort->scenePos();
+  const QPointF startPoint = mStartPort->scenePos();
+  const QPointF endPoint = mEndPort->scenePos();
 
   QPainterPath path(startPoint);
-  path.cubicTo(startPoint + QPointF(0, 50), endPoint + QPointF(0, -50),
-               endPoint);
+  auto constexpr controlOffset = 50;
+  path.cubicTo(startPoint + QPointF(0, controlOffset),
+               endPoint + QPointF(0, -controlOffset), endPoint);
   setPath(path);
 }
 QPainterPath NodeConnector::shape() const {
+  auto constexpr strokeWidth = 12;  // hit area width, wider than visual pen
   QPainterPathStroker stroker;
-  stroker.setWidth(12);  // hit area, wider than visual pen
+  stroker.setWidth(strokeWidth);  // hit area, wider than visual pen
   return stroker.createStroke(path());
 }
 
 void NodeConnector::paint(QPainter* painter,
                           const QStyleOptionGraphicsItem* option,
                           QWidget* widget) {
-  const auto selected = option->state & QStyle::State_Selected;
-  setPen(QPen(selected ? Qt::red : Qt::black, selected ? 3.0 : 2.0));
+  auto constexpr penWidth = 2.0;
+  auto constexpr selectedPenWidth = 3.0;
+
+  // Highlight selected connections in red and make them thicker for better
+  // visibility Note: QStyle::State_Selected is set by the QGraphicsScene when
+  // the item is selected
+  // state is a bitmask, so we check if the State_Selected bit is set using a
+  // bitwise AND operation
+  const bool selected =
+      option->state &          // NOLINT [readability-implicit-bool-conversion]
+      QStyle::State_Selected;  // NOLINT [readability-implicit-bool-conversion]
+  setPen(QPen(selected ? Qt::red : Qt::black,
+              selected ? selectedPenWidth : penWidth));
   QGraphicsPathItem::paint(painter, option, widget);
 }
 }  // namespace ZanaBlocks::IDE

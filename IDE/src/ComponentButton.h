@@ -15,7 +15,7 @@ namespace ZanaBlocks::IDE {
 class ComponentButton : public QToolButton {
   Q_OBJECT
  public:
-  explicit ComponentButton(const QString& itemType, QWidget* parent = nullptr);
+  explicit ComponentButton(QString itemType, QWidget* parent = nullptr);
 
  private:
   void mousePressEvent(QMouseEvent* event) override;

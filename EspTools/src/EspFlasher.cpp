@@ -15,11 +15,10 @@
 #include "SerialPort.h"
 #include "esp_targets.h"
 
-#ifndef FAST_BAUD
-#define FAST_BAUD 230400  // safe fallback
-#endif
+constexpr auto FAST_BAUD{230400};  // safe fallback
+auto constexpr HUNDRED = 100;
 
-using namespace ZanaBlocks::Utilities;
+namespace ZanaBlocks::EspTools {
 
 Bytes EspFlasher::loadFirmware(const std::string& path) {
   std::ifstream firmwareFile(path, std::ios::binary | std::ios::ate);
@@ -30,15 +29,18 @@ Bytes EspFlasher::loadFirmware(const std::string& path) {
   auto size = firmwareFile.tellg();
   firmwareFile.seekg(0);
   Bytes firmware(static_cast<size_t>(size));
+  // NOLINTNEXTLINE [cppcoreguidelines-pro-type-reinterpret-cast]
   firmwareFile.read(reinterpret_cast<char*>(firmware.data()), size);
   return firmware;
 }
 
-static std::optional<uint32_t> getFlashAddress(target_chip_t chip) {
+namespace {
+std::optional<uint32_t> getFlashAddress(target_chip_t chip) {
+  auto constexpr FLASH_ADDR_ESP32 = 0x1000;
   switch (chip) {
     case ESP32_CHIP:
     case ESP32S2_CHIP:
-      return 0x1000;
+      return FLASH_ADDR_ESP32;
     case ESP32S3_CHIP:
     case ESP32C3_CHIP:
     case ESP32C6_CHIP:
@@ -48,14 +50,17 @@ static std::optional<uint32_t> getFlashAddress(target_chip_t chip) {
       return std::nullopt;
   }
 }
+}  // namespace
 
 static constexpr uint32_t BLOCK = 1024;
 
 void EspFlasher::flashFirmware(esp_loader_t* loader, const uint32_t addr,
                                const Bytes& firmware) {
   // Must be 4-byte aligned for the flash controller
-  uint32_t imageSize = static_cast<uint32_t>(firmware.size());
-  if (imageSize % 4 != 0) imageSize += 4 - (imageSize % 4);
+  auto imageSize = static_cast<uint32_t>(firmware.size());
+  if (imageSize % 4 != 0) {
+    imageSize += 4 - (imageSize % 4);
+  }
 
   esp_loader_flash_cfg_t cfg{};
   cfg.offset = addr;
@@ -71,11 +76,12 @@ void EspFlasher::flashFirmware(esp_loader_t* loader, const uint32_t addr,
 
   // BLOCK-sized scratch buffer — library writes its own 0xFF padding into
   // the tail of this buffer, past the actual chunk bytes
-  Bytes block(BLOCK, 0xFF);
+  auto constexpr Padding = 0xFF;
+  Bytes block(BLOCK, Padding);
 
-  size_t written = 0;
+  uint32_t written = 0;
   while (written < firmware.size()) {
-    uint32_t chunk = static_cast<uint32_t>(
+    const auto chunk = static_cast<uint32_t>(
         std::min<size_t>(BLOCK, firmware.size() - written));
 
     std::copy(firmware.begin() + written, firmware.begin() + written + chunk,
@@ -90,7 +96,8 @@ void EspFlasher::flashFirmware(esp_loader_t* loader, const uint32_t addr,
     }
 
     written += chunk;
-    progress(written * 100 / firmware.size());
+    progress(static_cast<int32_t>(static_cast<uint64_t>(written) * HUNDRED /
+                                  firmware.size()));
     fflush(stdout);
   }
 
@@ -117,7 +124,7 @@ bool EspFlasher::flash(const std::string& device,
   }
   auto* port = createSerialPort(connection.get());
 
-  if (!port) {
+  if (port == nullptr) {
     status("Failed to open serial port: " + device);
     return false;
   }
@@ -137,14 +144,17 @@ bool EspFlasher::flash(const std::string& device,
   status("Connecting on " + device + " @" + std::to_string(DEFAULT_BUAD) +
          " baud...");
   esp_loader_connect_args_t conn = ESP_LOADER_CONNECT_DEFAULT();
-  conn.trials = 20;         // default is 10, give more room
-  conn.sync_timeout = 200;  // ms per attempt
+  constexpr int CONNECT_TRIALS = 20;
+  constexpr int CONNECT_SYNC_TIMEOUT_MS = 200;
 
-  if (onEnterBootloader) {
-    onEnterBootloader();
+  conn.sync_timeout = CONNECT_SYNC_TIMEOUT_MS;
+  conn.trials = CONNECT_TRIALS;  // default is 10, give more room
+
+  if (mOnEnterBootloader) {
+    mOnEnterBootloader();
     status("Waiting for the user to put the device into bootloader mode...");
     while (!mEnteredBootloaderMode.load()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      std::this_thread::sleep_for(std::chrono::milliseconds(HUNDRED));
     }
 
   } else {
@@ -160,12 +170,14 @@ bool EspFlasher::flash(const std::string& device,
   }
 
   // ── detect chip ───────────────────────────────────────────────────────────
-  target_chip_t chip = esp_loader_get_target(&loader);
-  if (!getFlashAddress(chip).has_value()) {
+  const target_chip_t chip = esp_loader_get_target(&loader);
+  auto flashAddrOpt = getFlashAddress(chip);
+  if (!flashAddrOpt.has_value()) {
     status("Unsupported chip id=" + std::to_string(static_cast<int>(chip)));
     return false;
   }
-  uint32_t flash_addr = getFlashAddress(chip).value();
+
+  const uint32_t flashAddr = flashAddrOpt.value();
 
   // ── bump baud ─────────────────────────────────────────────────────────────
   if (FAST_BAUD > static_cast<int>(DEFAULT_BUAD)) {
@@ -183,7 +195,7 @@ bool EspFlasher::flash(const std::string& device,
   // ── flash ─────────────────────────────────────────────────────────────────
   status("Flashing MicroPython (" + std::to_string(firmware.size()) +
          " bytes)...");
-  flashFirmware(&loader, flash_addr, firmware);
+  flashFirmware(&loader, flashAddr, firmware);
 
   // ── reboot ────────────────────────────────────────────────────────────────
   esp_loader_reset_target(&loader);
@@ -195,13 +207,14 @@ bool EspFlasher::flash(const std::string& device,
 }
 
 void EspFlasher::status(const std::string& msg) const {
-  if (onStatus) {
-    onStatus(msg);
+  if (mOnStatus) {
+    mOnStatus(msg);
   }
 }
 
 void EspFlasher::progress(const int progress) const {
-  if (onProgress) {
-    onProgress(progress);
+  if (mOnProgress) {
+    mOnProgress(progress);
   }
 }
+}  // namespace ZanaBlocks::EspTools

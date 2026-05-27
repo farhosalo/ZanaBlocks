@@ -18,7 +18,6 @@ class SettingsDialog : public QDialog {
 
  public:
   explicit SettingsDialog(QWidget* parent = nullptr);
-  ~SettingsDialog() = default;
 
  private:
   void keyPressEvent(QKeyEvent* event) override;
@@ -26,7 +25,7 @@ class SettingsDialog : public QDialog {
   void saveSettings();
   void addPortSettings(QFormLayout* layout);
   void addFlashSettings(QFormLayout* layout);
-  void enableSettings(const bool enable);
+  void enableSettings(bool enable);
 
   bool flash();
 
@@ -39,6 +38,7 @@ class SettingsDialog : public QDialog {
   QLineEdit* mFirmwarePathEdit;
   QPushButton* mFlashButton;
 
-  std::unique_ptr<EspFlasher> mFlasher{std::make_unique<EspFlasher>()};
+  std::unique_ptr<EspTools::EspFlasher> mFlasher{
+      std::make_unique<EspTools::EspFlasher>()};
 };
 }  // namespace ZanaBlocks::IDE

@@ -8,9 +8,12 @@
 
 namespace ZanaBlocks::IDE {
 
+auto constexpr WINDOW_WIDTH{500};
+auto constexpr WINDOW_HEIGHT{300};
+
 AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent) {
   setWindowTitle("About ZanaBlocks");
-  resize(500, 300);
+  resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 
   auto* layout = new QVBoxLayout(this);
 

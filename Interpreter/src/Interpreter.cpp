@@ -4,8 +4,6 @@
 
 #include "Logging.h"
 
-using namespace ZanaBlocks::Utilities;
-
 namespace ZanaBlocks::Interpreter {
 
 bool Interpreter::interpret(const std::shared_ptr<Schema::Root>& schema) {
@@ -42,7 +40,7 @@ bool Interpreter::saveToFile(const std::string& filename) {
     return false;
   }
   for (const auto& [indent, line] : mLines) {
-    auto indentLevel = indent * indentSize;
+    auto indentLevel = indent * INDENT_SIZE;
     outFile << std::string(indentLevel, ' ') << line << "\n";
   }
   outFile.close();

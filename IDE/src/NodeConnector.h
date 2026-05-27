@@ -14,20 +14,19 @@ class NodePort;
  */
 class NodeConnector : public QGraphicsPathItem {
  public:
-  NodeConnector(NodePort* start, NodePort* end = nullptr);
-  ~NodeConnector() override = default;
+  explicit NodeConnector(NodePort* start, NodePort* end = nullptr);
 
   /**
    * @brief Returns the starting port of the connection.
    * @return The starting port, or nullptr if not connected.
    */
-  NodePort* getStartPort() const { return mStartPort; }
+  [[nodiscard]] NodePort* getStartPort() const { return mStartPort; }
 
   /**
    * @brief Returns the ending port of the connection.
    * @return The ending port, or nullptr if not connected.
    */
-  NodePort* getEndPort() const { return mEndPort; }
+  [[nodiscard]] NodePort* getEndPort() const { return mEndPort; }
 
   /**
    * @brief Updates the path of the connection based on the current positions
@@ -40,7 +39,7 @@ class NodeConnector : public QGraphicsPathItem {
              QWidget* widget) override;
 
   // Make the hit area wider than the visual line for easier interaction
-  QPainterPath shape() const override;
+  [[nodiscard]] QPainterPath shape() const override;
 
   NodePort* mStartPort;
   NodePort* mEndPort;

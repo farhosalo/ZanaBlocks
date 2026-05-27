@@ -10,8 +10,6 @@
 #include "Schema.pb.h"
 #include "SleepNode.h"
 
-using namespace ZanaBlocks::Utilities;
-
 namespace ZanaBlocks::IDE {
 Scene::Scene(QObject* parent) : QGraphicsScene(parent) {}
 
@@ -29,7 +27,9 @@ void Scene::beginConnection(NodePort* port) {
   }
 }
 void Scene::updateConnection(QPointF pos) {
-  if (!mStartPort) return;
+  if (mStartPort == nullptr) {
+    return;
+  }
   QPainterPath path(mStartPort->scenePos());
   path.lineTo(pos);
   mTempConnection->setPath(path);
@@ -39,7 +39,7 @@ void Scene::endConnection(NodePort* targetPort) {
   delete mTempConnection;
   mTempConnection = nullptr;
 
-  if (mStartPort && targetPort) {
+  if (mStartPort != nullptr && targetPort != nullptr) {
     createConnection(mStartPort, targetPort);
   }
 
@@ -53,34 +53,40 @@ void Scene::endConnection(NodePort* targetPort) {
   }
 }
 
-void Scene::createConnection(NodePort* from, NodePort* to) {
-  if (!from || !to || from == to) return;
+void Scene::createConnection(NodePort* fromPort, NodePort* toPort) {
+  if (fromPort == nullptr || toPort == nullptr || fromPort == toPort) {
+    return;
+  }
 
-  Node* fromNode = from->parentNode();
-  Node* toNode = to->parentNode();
-  if (!fromNode || !toNode || fromNode == toNode) return;
+  auto* fromNode = fromPort->parentNode();
+  auto* toNode = toPort->parentNode();
+  if (fromNode == nullptr || toNode == nullptr || fromNode == toNode) {
+    return;
+  }
 
   // Check ALL ports of fromNode, not just the one being connected
   for (auto* port : fromNode->getPorts()) {
     for (auto* conn : port->connections()) {
-      Node* otherNode = (conn->getStartPort()->parentNode() == fromNode)
+      auto* otherNode = (conn->getStartPort()->parentNode() == fromNode)
                             ? conn->getEndPort()->parentNode()
                             : conn->getStartPort()->parentNode();
-      if (otherNode == toNode) return;
+      if (otherNode == toNode) {
+        return;
+      }
     }
   }
 
   for (auto* port : toNode->getPorts()) {
-    if (port->getType() == PortType::Input && !port->connections().isEmpty()) {
+    if (port->getType() == PORT_TYPE::INPUT && !port->connections().isEmpty()) {
       return;  // Target node already has a connection to a single-connector
                // port
     }
   }
 
-  auto* connection = new NodeConnector(from, to);
+  auto* connection = new NodeConnector(fromPort, toPort);
   addItem(connection);
-  from->addConnection(connection);
-  to->addConnection(connection);
+  fromPort->addConnection(connection);
+  toPort->addConnection(connection);
   connection->updatePath();
 }
 
@@ -106,7 +112,7 @@ void Scene::createItemAt(const QString& type, const QPointF& pos) {
 }
 
 bool Scene::serialize(const std::shared_ptr<Schema::Root>& root) {
-  LoopNode* mainLoop = nullptr;
+  const LoopNode* mainLoop = nullptr;
 
   // Find the main loop node
   for (auto* item : items()) {
@@ -118,7 +124,7 @@ bool Scene::serialize(const std::shared_ptr<Schema::Root>& root) {
     }
   }
 
-  if (!mainLoop) {
+  if (mainLoop == nullptr) {
     ERROR("Main loop node not found!");
     return false;
   }
@@ -138,13 +144,13 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
 }
 
 void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
-  if (mStartPort) {
+  if (mStartPort != nullptr) {
     NodePort* target = nullptr;
     // Search within a 10px radius so release doesn't have to be pixel-perfect
     const QRectF hitArea(event->scenePos() - QPointF(10, 10), QSizeF(20, 20));
     for (QGraphicsItem* item : items(hitArea)) {
       auto* port = dynamic_cast<NodePort*>(item);
-      if (port && port != mStartPort) {
+      if ((port != nullptr) && port != mStartPort) {
         target = port;
         break;
       }
@@ -168,7 +174,7 @@ void Scene::getLoopSchema(const Node* loop, Schema::Loop* loopSchema) {
   loopSchema->mutable_position()->set_y(loop->pos().y());
 
   for (auto* port : loop->getPorts()) {
-    if (port->getType() != PortType::Input) {
+    if (port->getType() != PORT_TYPE::INPUT) {
       for (auto* connection : port->connections()) {
         Node* targetNode = connection->getEndPort()->parentNode();
         if (auto* loopNode = dynamic_cast<LoopNode*>(targetNode)) {
@@ -206,7 +212,9 @@ void Scene::getLedSChema(const LedNode* ledNode, Schema::LED* ledSchema) {
 }
 
 void Scene::deleteConnection(NodeConnector* conn) {
-  if (!conn) return;
+  if (conn == nullptr) {
+    return;
+  }
   conn->getStartPort()->removeConnection(conn);
   conn->getEndPort()->removeConnection(conn);
   removeItem(conn);
@@ -215,9 +223,10 @@ void Scene::deleteConnection(NodeConnector* conn) {
 void Scene::deleteSelectedNodes() {
   for (QGraphicsItem* item : selectedItems()) {
     if (auto* node = dynamic_cast<LoopNode*>(item)) {
-      if (node->isMainLoop())
+      if (node->isMainLoop()) {
         // Don't delete the main loop node
         continue;
+      }
     }
     if (auto* node = dynamic_cast<Node*>(item)) {
       for (auto* port : node->getPorts()) {

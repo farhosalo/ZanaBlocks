@@ -31,12 +31,6 @@ find_program(CLANG_FORMAT_BIN clang-format REQUIRED)
 #Clang-Tidy
 find_program(CLANG_TIDY_EXE NAMES clang-tidy REQUIRED)
 
-set(CLANG_TIDY_COMMAND
-    "${CLANG_TIDY_EXE}"
-    "--config-file=${CMAKE_SOURCE_DIR}/.clang-tidy"
-    "--header-filter=^(?!.*(${CMAKE_BINARY_DIR})).*"
-
-)
 
 #Include directories
 include_directories(

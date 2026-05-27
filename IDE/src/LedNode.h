@@ -9,7 +9,7 @@ namespace ZanaBlocks::IDE {
  */
 class LedNode : public BaseNodeSchema<Schema::LED> {
  public:
-  explicit LedNode(const bool state = false, QGraphicsItem* parent = nullptr);
+  explicit LedNode(bool state = false, QGraphicsItem* parent = nullptr);
 
   /**
    * @brief Returns the LED state.

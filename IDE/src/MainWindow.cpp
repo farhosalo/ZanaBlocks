@@ -28,13 +28,9 @@
 #include "View.h"
 #include "google/protobuf/util/json_util.h"
 
-using namespace ZanaBlocks::Utilities;
-
 namespace ZanaBlocks::IDE {
 auto constexpr WINDOW_SIZE_WIDTH{1100};
 auto constexpr WINDOW_SIZE_HEIGHT{750};
-
-using namespace Utilities;
 
 auto MainWindow::run() {
   if (mSerialPort.empty()) {
@@ -102,8 +98,8 @@ auto MainWindow::open() { mLogOutput->appendPlainText("Opening a program..."); }
 auto MainWindow::settings() {
   SettingsDialog dialog(this);
   if (dialog.exec() == QDialog::Accepted) {
-    auto port = dialog.findChild<QComboBox*>("Port:");
-    if (port) {
+    auto* port = dialog.findChild<QComboBox*>("Port:");
+    if (port != nullptr) {
       mSerialPort = port->currentText().toStdString();
     }
   }
@@ -142,8 +138,9 @@ auto MainWindow::initUI() {
   mainSplitter->addWidget(verticalSplitter);
 
   // Set initial proportions
-  mainSplitter->setStretchFactor(0, 1);  // sidebar smaller
-  mainSplitter->setStretchFactor(1, 8);  // main area bigger
+  const auto MainAreaStechFactor = 8;
+  mainSplitter->setStretchFactor(0, 1);                    // sidebar smaller
+  mainSplitter->setStretchFactor(1, MainAreaStechFactor);  // main area bigger
 
   setCentralWidget(mainSplitter);
 }
@@ -266,7 +263,7 @@ void MainWindow::checkFirstApplicationRun() {
         "Use at your own risk.<br><br><br>");
     safetyMessageBox.setIcon(QMessageBox::Warning);
 
-    QCheckBox* dontShowAgainCheckBox = new QCheckBox("Don't show this again");
+    auto* dontShowAgainCheckBox = new QCheckBox("Don't show this again");
     safetyMessageBox.setCheckBox(dontShowAgainCheckBox);
     safetyMessageBox.setStandardButtons(QMessageBox::Ok);
     safetyMessageBox.exec();

@@ -2,7 +2,6 @@
 
 #include "DateTime.h"
 
-namespace ZanaBlocks::Utilities {
 auto constexpr RESET{"\033[0m"};
 auto constexpr WHITE{"\033[37m"};
 auto constexpr CYAN{"\033[36m"};
@@ -13,7 +12,7 @@ auto constexpr PURPLE{"\033[35m"};
 
 // NOLINTBEGIN (cppcoreguidelines-macro-usage)
 #define LOG(color, level, msg)                                            \
-  std::cout << color << "[" << timestamp() << "] "                        \
+  std::cout << color << "[" << ZanaBlocks::Utilities::timestamp() << "] " \
             << "[" << level << "] "                                       \
             << "[" << __FILE__ << ":" << __LINE__ << "] " << msg << RESET \
             << "\n"
@@ -28,4 +27,3 @@ auto constexpr PURPLE{"\033[35m"};
     std::exit(EXIT_FAILURE); \
   } while (0)
 // NOLINTEND
-}  // namespace ZanaBlocks::Utilities

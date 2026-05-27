@@ -21,7 +21,7 @@ struct ProbeResult {
 /**
  * @brief The state of a command execution.
  */
-enum class RUN_STATE {
+enum class RUN_STATE : uint8_t {
   ERROR = 0,    ///< Indicates an error occurred during command execution. The
                 ///< output string will contain the error message.
   SUCCESS = 1,  ///< Indicates the command executed successfully. The output
@@ -40,13 +40,15 @@ class ReplClient {
    */
   using ProgressCallback = std::function<void(const std::string& message)>;
 
-  ReplClient(const std::shared_ptr<sp_port>& connection);
+  explicit ReplClient(const std::shared_ptr<sp_port>& connection);
 
   ~ReplClient();
 
   // Make immovable and non-copyable
   ReplClient(const ReplClient&) = delete;
   ReplClient& operator=(const ReplClient&) = delete;
+  ReplClient(ReplClient&&) = delete;
+  ReplClient& operator=(ReplClient&&) = delete;
 
   /**
    * @brief Run a Python command in the raw REPL and return the output. The

@@ -39,6 +39,9 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     lib${PROJECT_NAME}
 )
+set_target_properties(lib${PROJECT_NAME} PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY_EXE};--header-filter=${CMAKE_CURRENT_SOURCE_DIR}/.*" 
+)
 
 file(GLOB_RECURSE ALL_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
@@ -53,7 +56,7 @@ add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_format)
 
 # Integrate clang-tidy with the build process of the main target
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}"
+    CXX_CLANG_TIDY "${CLANG_TIDY_EXE};--header-filter=${CMAKE_CURRENT_SOURCE_DIR}/.*" 
 )
 
 # Install the executable
