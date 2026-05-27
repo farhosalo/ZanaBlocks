@@ -181,7 +181,7 @@ ProbeResult ReplClient::probe() {
       (endPos != std::string::npos) ? output.substr(0, endPos) : output;
 
   // Strip the leading "OK" the raw REPL prepends
-  if (out.rfind("OK", 0) == 0) {
+  if (out.starts_with("OK")) {
     out = out.substr(2);
   }
 
@@ -211,13 +211,14 @@ ProbeResult ReplClient::probe() {
     INFO("Probe: unexpected response format: " + out);
     return result;
   }
-
+  // NOLINTBEGIN [cppcoreguidelines-pro-bounds-avoid-unchecked-container-access]
   const std::string implName = trimmed(parts[0]);
   result.firmwareVersion = trimmed(parts[1]);
   result.hardwareModel = trimmed(parts[2]);
+  // NOLINTEND
 
   std::string lower = implName;
-  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+  std::ranges::transform(lower, lower.begin(), ::tolower);
   result.isMicroPython = lower.find("micropython") != std::string::npos;
 
   INFO("Probe → impl: " + implName + "  fw: " + result.firmwareVersion +
@@ -225,7 +226,15 @@ ProbeResult ReplClient::probe() {
 
   return result;
 }
-ReplClient::~ReplClient() { exitRawRepl(); }
+ReplClient::~ReplClient() noexcept {
+  try {
+    exitRawRepl();
+  } catch (const std::exception& e) {
+    ERROR("ReplClient destructor exception: " << e.what());
+  } catch (...) {
+    ERROR("ReplClient destructor unknown exception");
+  }
+}
 std::pair<RUN_STATE, std::string> ReplClient::runPythonCmd(
     const std::string& code) {
   auto constexpr TimeoutMs = 3000;

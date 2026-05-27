@@ -20,13 +20,13 @@
 namespace ZanaBlocks::IDE {
 SettingsDialog::SettingsDialog(QWidget* parent)
     : QDialog(parent),
+      mPortListCombo(new QComboBox(this)),
       mButtonBox(new QDialogButtonBox(
           QDialogButtonBox::Save | QDialogButtonBox::Cancel, this)),
-      mPortListCombo(new QComboBox(this)),
-      mFirmwarePathEdit(new QLineEdit(this)),
-      mFlashButton(new QPushButton("Flash", this)),
       mFlashProgressBar(new QProgressBar(this)),
-      mFlashLogs(new QPlainTextEdit(this)) {
+      mFlashLogs(new QPlainTextEdit(this)),
+      mFirmwarePathEdit(new QLineEdit(this)),
+      mFlashButton(new QPushButton("Flash", this)) {
   setWindowTitle("Settings");
 
   auto* layout = new QFormLayout(this);
@@ -135,11 +135,11 @@ void SettingsDialog::enableSettings(const bool enable) {
   mFlashButton->setEnabled(enable);
   mFlashButton->setEnabled(enable);
 }
-bool SettingsDialog::flash() {
+void SettingsDialog::flash() {
   if (mFirmwarePathEdit->text().isEmpty() ||
       mPortListCombo->currentText().isEmpty()) {
     mFlashLogs->appendPlainText("Select a port and firmware file first.");
-    return false;
+    return;
   }
   mButtonBox->button(QDialogButtonBox::Cancel)->setEnabled(false);
 
@@ -177,18 +177,24 @@ bool SettingsDialog::flash() {
         this, [this]() { shoeEnterBootloaderMessage(); }, Qt::QueuedConnection);
   });
 
-  QtConcurrent::run([this]() {  // NOLINT [clang-diagnostic-unused-result]
+  // NOLINTBEGIN [clang-analyzer-cplusplus.NewDeleteLeaks]
+  auto future = QtConcurrent::run([this]() {
     enableSettings(false);
     const bool success =
         mFlasher->flash(mPortListCombo->currentText().toStdString(),
                         mFirmwarePathEdit->text().toStdString());
     enableSettings(true);
     QMetaObject::invokeMethod(
-        this, [success]() { qDebug() << "Finished:" << success; },
+        mFlashLogs,
+        [this, success]() {
+          mFlashLogs->appendPlainText(success ? "Flashing succeeded."
+                                              : "Flashing failed.");
+        },
         Qt::QueuedConnection);
   });
-
-  return true;
+  (void)future;  // To avoid "unused variable" warning. The future will clean up
+                 // when it goes out of scope.
+  // NOLINTEND
 }
 void SettingsDialog::shoeEnterBootloaderMessage() {
   QMessageBox enterBootloaderMessage;

@@ -1,7 +1,7 @@
 #pragma once
 #include "esp_loader_io.h"
 
-class sp_port;
+struct sp_port;
 
 namespace ZanaBlocks::EspTools {
 struct FlashPort;

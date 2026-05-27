@@ -42,7 +42,7 @@ class ReplClient {
 
   explicit ReplClient(const std::shared_ptr<sp_port>& connection);
 
-  ~ReplClient();
+  ~ReplClient() noexcept;
 
   // Make immovable and non-copyable
   ReplClient(const ReplClient&) = delete;

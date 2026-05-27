@@ -27,7 +27,7 @@ class SettingsDialog : public QDialog {
   void addFlashSettings(QFormLayout* layout);
   void enableSettings(bool enable);
 
-  bool flash();
+  void flash();
 
   void shoeEnterBootloaderMessage();
 

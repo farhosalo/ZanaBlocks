@@ -143,7 +143,7 @@ bool EspFlasher::flash(const std::string& device,
 
   status("Connecting on " + device + " @" + std::to_string(DEFAULT_BUAD) +
          " baud...");
-  esp_loader_connect_args_t conn = ESP_LOADER_CONNECT_DEFAULT();
+  esp_loader_connect_args_t conn{};
   constexpr int CONNECT_TRIALS = 20;
   constexpr int CONNECT_SYNC_TIMEOUT_MS = 200;
 
