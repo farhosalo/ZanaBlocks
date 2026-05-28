@@ -39,7 +39,7 @@ auto MainWindow::run() {
       mLogOutput->appendPlainText("No serial ports found!");
       return;
     }
-    mSerialPort = ports[0];
+    mSerialPort = ports.at(0);
   }
   auto connection = EspTools::connect(mSerialPort);
 
