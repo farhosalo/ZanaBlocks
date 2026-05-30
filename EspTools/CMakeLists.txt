@@ -21,6 +21,12 @@ FetchContent_GetProperties(esp_serial_flasher)
 
 FetchContent_MakeAvailable(esp_serial_flasher)
 
+# Suppress all warnings on the fetched target
+set_target_properties(flasher PROPERTIES
+    COMPILE_OPTIONS "-w"
+)
+# ---------------------------------------------------------------------------
+
 set(HEADERS
     src/EspTools.h
     src/ReplClient.h

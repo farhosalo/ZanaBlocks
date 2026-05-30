@@ -17,6 +17,11 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     protobuf::libprotobuf
 )
 
+# suppress all warnings on generated code
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    COMPILE_OPTIONS "-w"   
+)
+
 protobuf_generate(
     TARGET Schema
 )

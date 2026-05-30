@@ -14,18 +14,29 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
+
 add_compile_definitions(
     QT_NO_KEYWORDS          # Avoid signal/slot macro conflicts
 )
 
-if (NOT MSVC)
+# Compiler options 
+if (MSVC)
     add_compile_options(
-        -Wall -Wextra -Wpedantic
-        -Wno-unused-parameter
-        -Wno-deprecated-declarations
+        /W4
+        /WX
+        /wd4996   # deprecated declarations
+        /permissive- 
+        /wd4251 
+        /wd4127
     )
 else()
-    add_compile_options(/W4 /permissive- /wd4251 /wd4127)
+    add_compile_options(
+        -Wall -Wextra -Wpedantic -Werror
+        -Wconversion -Wfloat-conversion
+        -Wnon-virtual-dtor -Woverloaded-virtual
+        -Wno-deprecated-declarations
+        -Wno-gnu-zero-variadic-macro-arguments
+    )
 endif()
 
 #Clang-Format
