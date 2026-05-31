@@ -34,6 +34,14 @@ message Loop {
     // You can add more fields here if needed, such as a condition for the loop to break early  
 }
 
+// A PWM action that can be used to control a PWM signal on the device.
+message Pwm {
+    Position position = 1; // position to control the PWM
+    int32 pin = 2; // which pin to control
+    int32 duty = 3; 
+    int32 frequency = 4; // frequency in Hz
+}
+
 // A single action to perform, which can be a print, sleep, or another loop.
 message Action { //Single action to perform
     string name = 1;
@@ -42,6 +50,7 @@ message Action { //Single action to perform
         Sleep sleep = 3;
         Loop loop = 4;
         LED led = 5;
+        Pwm pwm = 6;
     }
 }
 
