@@ -34,6 +34,7 @@ class Interpreter {
   auto extractPrint(const Schema::Print& print);
   auto extractSleep(const Schema::Sleep& sleep);
   auto extractLed(const Schema::LED& led);
+  auto extractPwm(const Schema::Pwm& pwm);
 
   void reset();
   int mCurrentLevel{0};

@@ -33,6 +33,17 @@ auto Interpreter::extractLed(const Schema::LED& led) {
   mLines.emplace_back(mCurrentLevel, line);
 }
 
+auto Interpreter::extractPwm(const Schema::Pwm& pwm) {
+  auto varName = "pwm_" + std::to_string(pwm.pin());
+
+  auto line = varName + " = PWM(Pin(" + std::to_string(pwm.pin()) + "))";
+  mLines.emplace_back(mCurrentLevel, line);
+  line = varName + ".duty(" + std::to_string(pwm.duty()) + ")";
+  mLines.emplace_back(mCurrentLevel, line);
+  line = varName + ".freq(" + std::to_string(pwm.frequency()) + ")";
+  mLines.emplace_back(mCurrentLevel, line);
+}
+
 bool Interpreter::saveToFile(const std::string& filename) {
   // Save the generated lines to a file
   std::ofstream outFile(filename);
@@ -51,7 +62,7 @@ void Interpreter::reset() {
   mCurrentLevel = 0;
   mLines.clear();
 
-  mLines.emplace_back(0, "from machine import Pin");
+  mLines.emplace_back(0, "from machine import Pin, PWM");
   mLines.emplace_back(0, "from time import sleep_ms");
   mLines.emplace_back(0, "");
 }
@@ -76,6 +87,8 @@ bool Interpreter::extractLoop(const Schema::Loop& loop) {
       }
     } else if (action.has_led()) {
       extractLed(action.led());
+    } else if (action.has_pwm()) {
+      extractPwm(action.pwm());
     } else {
       ERROR("Unknown action type in loop");
       return false;  // Unknown action type
