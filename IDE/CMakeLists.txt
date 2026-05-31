@@ -22,6 +22,7 @@ add_library(lib${PROJECT_NAME}
     src/IdeSettings.cpp
     src/LicenseDialog.cpp
     src/AboutDialog.cpp
+    src/PwmNode.cpp
 )
 
 target_link_libraries(lib${PROJECT_NAME}
@@ -81,6 +82,7 @@ set (HEADERS
     src/IdeSettings.h
     src/LicenseDialog.h
     src/AboutDialog.h
+    src/PwmNode.h
 )
 install(FILES ${HEADERS}
     DESTINATION include/${PROJECT_NAME}
