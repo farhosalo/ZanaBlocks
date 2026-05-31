@@ -14,6 +14,7 @@ class Loop;
 class Print;
 class Sleep;
 class LED;
+class Action;
 }  // namespace Schema
 
 namespace IDE {
@@ -114,6 +115,7 @@ class Scene : public QGraphicsScene {
   void deleteConnection(NodeConnector* conn);
   void deleteSelectedNodes();
   void deleteSelectedConnections();
+  static double getPositionX(const Schema::Action* action);
 
   /** @brief The starting port for the current connection. */
   NodePort* mStartPort = nullptr;

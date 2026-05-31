@@ -181,16 +181,22 @@ void Scene::getLoopSchema(const Node* loop, Schema::Loop* loopSchema) {
           getLoopSchema(loopNode, loopSchema->add_actions()->mutable_loop());
         } else if (auto* printNode = dynamic_cast<PrintNode*>(targetNode)) {
           getPrintSchema(printNode, loopSchema->add_actions()->mutable_print());
-        }
-        if (auto* sleepNode = dynamic_cast<SleepNode*>(targetNode)) {
+        } else if (auto* sleepNode = dynamic_cast<SleepNode*>(targetNode)) {
           getSleepSchema(sleepNode, loopSchema->add_actions()->mutable_sleep());
-        }
-        if (auto* ledNode = dynamic_cast<LedNode*>(targetNode)) {
+        } else if (auto* ledNode = dynamic_cast<LedNode*>(targetNode)) {
           getLedSChema(ledNode, loopSchema->add_actions()->mutable_led());
+        } else {
+          ERROR("Unknown node type connected to loop: "
+                << typeid(*targetNode).name());
         }
       }
     }
   }
+
+  // Sort actions by their X position to maintain left-to-right order
+  std::ranges::sort(
+      *loopSchema->mutable_actions(), std::less{},
+      [](const Schema::Action& action) { return getPositionX(&action); });
 }
 void Scene::getPrintSchema(const PrintNode* printNode,
                            Schema::Print* printSchema) {
@@ -198,6 +204,21 @@ void Scene::getPrintSchema(const PrintNode* printNode,
   printSchema->mutable_position()->set_x(printNode->pos().x());
   printSchema->mutable_position()->set_y(printNode->pos().y());
 }
+double Scene::getPositionX(const Schema::Action* action) {
+  switch (action->action_case()) {
+    case Schema::Action::kPrint:
+      return action->print().position().x();
+    case Schema::Action::kSleep:
+      return action->sleep().position().x();
+    case Schema::Action::kLed:
+      return action->led().position().x();
+    case Schema::Action::kLoop:
+      return action->loop().position().x();
+    default:
+      return 0.0;
+  }
+}
+
 void Scene::getSleepSchema(const SleepNode* sleepNode,
                            Schema::Sleep* sleepSchema) {
   sleepSchema->CopyFrom(sleepNode->schema());
