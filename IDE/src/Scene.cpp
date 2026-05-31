@@ -7,6 +7,7 @@
 #include "Logging.h"
 #include "LoopNode.h"
 #include "PrintNode.h"
+#include "PwmNode.h"
 #include "Schema.pb.h"
 #include "SleepNode.h"
 
@@ -185,6 +186,8 @@ void Scene::getLoopSchema(const Node* loop, Schema::Loop* loopSchema) {
           getSleepSchema(sleepNode, loopSchema->add_actions()->mutable_sleep());
         } else if (auto* ledNode = dynamic_cast<LedNode*>(targetNode)) {
           getLedSChema(ledNode, loopSchema->add_actions()->mutable_led());
+        } else if (auto* pwmNode = dynamic_cast<PwmNode*>(targetNode)) {
+          getPwmSchema(pwmNode, loopSchema->add_actions()->mutable_pwm());
         } else {
           ERROR("Unknown node type connected to loop: "
                 << typeid(*targetNode).name());
@@ -230,6 +233,12 @@ void Scene::getLedSChema(const LedNode* ledNode, Schema::LED* ledSchema) {
   ledSchema->CopyFrom(ledNode->schema());
   ledSchema->mutable_position()->set_x(ledNode->pos().x());
   ledSchema->mutable_position()->set_y(ledNode->pos().y());
+}
+
+void Scene::getPwmSchema(const PwmNode* pwmNode, Schema::Pwm* pwmSchema) {
+  pwmSchema->CopyFrom(pwmNode->schema());
+  pwmSchema->mutable_position()->set_x(pwmNode->pos().x());
+  pwmSchema->mutable_position()->set_y(pwmNode->pos().y());
 }
 
 void Scene::deleteConnection(NodeConnector* conn) {

@@ -14,6 +14,7 @@ class Loop;
 class Print;
 class Sleep;
 class LED;
+class Pwm;
 class Action;
 }  // namespace Schema
 
@@ -24,6 +25,7 @@ class LoopNode;
 class PrintNode;
 class SleepNode;
 class LedNode;
+class PwmNode;
 
 /**
  * @brief Custom QGraphicsScene to manage node connections and interactions in
@@ -108,6 +110,13 @@ class Scene : public QGraphicsScene {
    * @param ledSchema The Protobuf LED message to populate.
    */
   static void getLedSChema(const LedNode* ledNode, Schema::LED* ledSchema);
+
+  /**
+   * * @brief Populates a PWM schema from a PwmNode.
+   * @param pwmNode The PwmNode to serialize.
+   * @param pwmSchema The Protobuf Pwm message to populate.
+   */
+  static void getPwmSchema(const PwmNode* pwmNode, Schema::Pwm* pwmSchema);
 
   /** @brief Deletes a connection and cleans up its references.
    * @param conn The connection to delete.
