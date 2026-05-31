@@ -223,6 +223,10 @@ auto MainWindow::initSidebar() {
   auto* ledButton = new ComponentButton("LED", mSidebar);
   ledButton->setText("💡 LED");
   mSidebar->addWidget(ledButton);
+
+  auto* pwmButton = new ComponentButton("PWM", mSidebar);
+  pwmButton->setText("⚡ PWM");
+  mSidebar->addWidget(pwmButton);
 }
 
 MainWindow::MainWindow(QWidget* parent)

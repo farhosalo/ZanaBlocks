@@ -109,6 +109,10 @@ void Scene::createItemAt(const QString& type, const QPointF& pos) {
     auto* node = new LedNode();
     node->setPos(pos);
     addItem(node);
+  } else if (type.toUpper() == "PWM") {
+    auto* node = new PwmNode();
+    node->setPos(pos);
+    addItem(node);
   }
 }
 
