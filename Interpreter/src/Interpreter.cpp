@@ -81,6 +81,7 @@ bool Interpreter::extractLoop(const Schema::Loop& loop) {
       return false;  // Unknown action type
     }
   }
+  mCurrentLevel--;
 
   return true;
 }
