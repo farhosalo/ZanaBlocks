@@ -8,7 +8,7 @@
 
 namespace ZanaBlocks::IDE {
 
-auto constexpr WINDOW_WIDTH{500};
+auto constexpr WINDOW_WIDTH{300};
 auto constexpr WINDOW_HEIGHT{300};
 
 AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent) {
@@ -22,7 +22,14 @@ AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent) {
       "<p>Version: " +
       QString::fromStdString(VERSION) +
       "</p>"
-      "<p>A cross-platform desktop application.</p>"
+      "<p>Copyright © 2026 Farho Salo."
+      "<br> All rights reserved."
+      "<br><br>"
+      "Built to help children learn programming"
+      "<br>"
+      "through visual blocks and real hardware."
+      "<br>"
+      "</p>"
       "<p>Licensed under Apache License 2.0.</p>"
       "<br>"
       "<b>Third-party libraries:</b><br>"

@@ -59,6 +59,11 @@ add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_format)
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_CLANG_TIDY "${CLANG_TIDY_EXE};--header-filter=${CMAKE_CURRENT_SOURCE_DIR}/.*" 
 )
+qt_add_resources(${PROJECT_NAME} resources
+    PREFIX "/"
+    FILES
+        assets/icon.png
+)
 
 # Install the executable
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
