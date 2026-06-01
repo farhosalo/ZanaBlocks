@@ -221,9 +221,12 @@ double Scene::getPositionX(const Schema::Action* action) {
       return action->led().position().x();
     case Schema::Action::kLoop:
       return action->loop().position().x();
-    default:
+    case Schema::Action::kPwm:
+      return action->pwm().position().x();
+    case Schema::Action::ACTION_NOT_SET:
       return 0.0;
   }
+  return 0.0;
 }
 
 void Scene::getSleepSchema(const SleepNode* sleepNode,

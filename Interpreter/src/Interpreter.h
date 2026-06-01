@@ -39,5 +39,7 @@ class Interpreter {
   void reset();
   int mCurrentLevel{0};
   Lines mLines;
+  std::set<std::string> mGlobalVariables;
+  std::set<std::string> mImports;
 };
 }  // namespace ZanaBlocks::Interpreter

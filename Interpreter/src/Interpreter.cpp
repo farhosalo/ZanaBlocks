@@ -21,23 +21,32 @@ auto Interpreter::extractPrint(const Schema::Print& print) {
 }
 
 auto Interpreter::extractSleep(const Schema::Sleep& sleep) {
+  mImports.insert("from time import sleep_ms");
+
   auto line = "sleep_ms(" + std::to_string(sleep.duration()) + ")";
   mLines.emplace_back(mCurrentLevel, line);
 }
 
 auto Interpreter::extractLed(const Schema::LED& led) {
-  auto line = "led = Pin(" + std::to_string(led.pin()) + ", Pin.OUT)";
-  mLines.emplace_back(mCurrentLevel, line);
+  mImports.insert("from machine import Pin");
+
+  auto varName = "led_" + std::to_string(led.pin());
+  auto line = varName + "  = Pin(" + std::to_string(led.pin()) + ", Pin.OUT)";
+
+  mGlobalVariables.insert(line);
+
   const std::string ledState = led.state() ? "1" : "0";
-  line = "led.value(" + ledState + ")";
+  line = varName + ".value(" + ledState + ")";
   mLines.emplace_back(mCurrentLevel, line);
 }
 
 auto Interpreter::extractPwm(const Schema::Pwm& pwm) {
-  auto varName = "pwm_" + std::to_string(pwm.pin());
+  mImports.insert("from machine import PWM");
 
+  auto varName = "pwm_" + std::to_string(pwm.pin());
   auto line = varName + " = PWM(Pin(" + std::to_string(pwm.pin()) + "))";
-  mLines.emplace_back(mCurrentLevel, line);
+  mGlobalVariables.insert(line);
+
   line = varName + ".duty(" + std::to_string(pwm.duty()) + ")";
   mLines.emplace_back(mCurrentLevel, line);
   line = varName + ".freq(" + std::to_string(pwm.frequency()) + ")";
@@ -50,6 +59,17 @@ bool Interpreter::saveToFile(const std::string& filename) {
   if (!outFile.is_open()) {
     return false;
   }
+
+  for (const auto& line : mImports) {
+    outFile << line << "\n";
+  }
+  outFile << "\n";
+
+  for (const auto& line : mGlobalVariables) {
+    outFile << line << "\n";
+  }
+  outFile << "\n";
+
   for (const auto& [indent, line] : mLines) {
     auto indentLevel = indent * INDENT_SIZE;
     outFile << std::string(indentLevel, ' ') << line << "\n";
@@ -61,10 +81,8 @@ bool Interpreter::saveToFile(const std::string& filename) {
 void Interpreter::reset() {
   mCurrentLevel = 0;
   mLines.clear();
-
-  mLines.emplace_back(0, "from machine import Pin, PWM");
-  mLines.emplace_back(0, "from time import sleep_ms");
-  mLines.emplace_back(0, "");
+  mGlobalVariables.clear();
+  mImports.clear();
 }
 
 bool Interpreter::extractLoop(const Schema::Loop& loop) {
