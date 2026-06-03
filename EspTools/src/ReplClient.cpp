@@ -18,21 +18,13 @@ auto constexpr HUNDRED =
     100;  // Give the device time to reboot before the caller tries to reconnect
 
 bool ReplClient::putFile(const std::string& localPath,
-                         const std::string& remotePath,
-                         ProgressCallback callback) {
-  // Helper to invoke the progress callback if it's set
-  auto invokeCallback = [&](const std::string& message) {
-    if (callback) {
-      callback(message);
-    }
-  };
-
+                         const std::string& remotePath) {
   std::pair<RUN_STATE, std::string> copyState;
 
   // Read local file
   std::ifstream file(localPath, std::ios::binary | std::ios::ate);
   if (!file.is_open()) {
-    invokeCallback("Cannot open local file: " + localPath);
+    log("Cannot open local file: " + localPath);
     return false;
   }
 
@@ -46,10 +38,10 @@ bool ReplClient::putFile(const std::string& localPath,
   // Open remote file for writing (binary)
   copyState =
       runPythonCmd("import ubinascii; _f = open('" + remotePath + "', 'wb')");
-  INFO(copyState.second);
+  log(copyState.second);
 
   if (copyState.first != RUN_STATE::SUCCESS) {
-    invokeCallback("Failed to open remote file for writing!");
+    log("Failed to open remote file for writing!");
     return false;
   }
 
@@ -66,18 +58,17 @@ bool ReplClient::putFile(const std::string& localPath,
 
     copyState = runPythonCmd(cmd);
 
-    INFO(copyState.second);
+    log(copyState.second);
 
     if (copyState.first != RUN_STATE::SUCCESS) {
-      invokeCallback("Failed to write remote file!");
+      log("Failed to write remote file!");
       runPythonCmd("_f.close()");
       return false;
     }
 
     sent += chunkLen;
-    invokeCallback("Sent " + std::to_string(sent) + "/" +
-                   std::to_string(fileSize) + " bytes" + "(" +
-                   std::to_string((sent * HUNDRED) / fileSize) + "%)");
+    log("Sent " + std::to_string(sent) + "/" + std::to_string(fileSize) +
+        " bytes" + "(" + std::to_string((sent * HUNDRED) / fileSize) + "%)");
   }
 
   // Close remote file
@@ -85,7 +76,7 @@ bool ReplClient::putFile(const std::string& localPath,
   return true;
 }
 
-void ReplClient::reset() {
+void ReplClient::resetTarget() {
   // We attempt to send the reset command. If the serial write fails (e.g.
   // device already disconnected or rebooting), we log the error but continue to
   // the sleep period to allow the hardware state to settle.
@@ -124,12 +115,12 @@ std::pair<RUN_STATE, std::string> ReplClient::readUntil(
         mSerialConnection.get(), tmp.data(), tmp.size(), timeoutMs);
     if (numberOfReadBytes < 0) {  // Error occurred during read
       buffer = "Failed to read from REPL";
-      ERROR(buffer);
+      log(buffer);
       return {RUN_STATE::ERROR, buffer};
     }
     if (numberOfReadBytes == 0) {  // Timeout occurred
       buffer = "REPL read timeout";
-      ERROR(buffer);
+      log(buffer);
       return {RUN_STATE::TIME_OUT, buffer};
     }
     buffer.append(tmp.data(), static_cast<std::size_t>(numberOfReadBytes));
@@ -170,7 +161,7 @@ ProbeResult ReplClient::probe() {
       "print(sys.implementation.name + '|' + u.release + '|' + u.machine)");
 
   if (state != RUN_STATE::SUCCESS) {
-    INFO("Probe failed: " + output);
+    log("Probe failed: " + output);
     return result;
   }
 
@@ -208,7 +199,7 @@ ProbeResult ReplClient::probe() {
 
   auto parts = splitPipe(out);
   if (parts.size() < 3) {
-    INFO("Probe: unexpected response format: " + out);
+    log("Probe: unexpected response format: " + out);
     return result;
   }
   // NOLINTBEGIN [cppcoreguidelines-pro-bounds-avoid-unchecked-container-access]
@@ -221,16 +212,16 @@ ProbeResult ReplClient::probe() {
   std::ranges::transform(lower, lower.begin(), ::tolower);
   result.isMicroPython = lower.find("micropython") != std::string::npos;
 
-  INFO("Probe → impl: " + implName + "  fw: " + result.firmwareVersion +
-       "  hw: " + result.hardwareModel);
+  log("Probe → impl: " + implName + "  fw: " + result.firmwareVersion +
+      "  hw: " + result.hardwareModel);
 
   return result;
 }
 ReplClient::~ReplClient() noexcept {
   try {
     exitRawRepl();
-  } catch (const std::exception& e) {
-    ERROR("ReplClient destructor exception: " << e.what());
+  } catch (const std::exception& except) {
+    ERROR("ReplClient destructor exception: " << except.what());
   } catch (...) {
     ERROR("ReplClient destructor unknown exception");
   }

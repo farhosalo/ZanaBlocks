@@ -8,10 +8,12 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QPlainTextEdit>
+#include <QPointer>
 #include <QSettings>
 #include <QSplitter>
 #include <QStatusBar>
 #include <QToolBar>
+#include <QtConcurrent>
 
 #include "AboutDialog.h"
 #include "ComponentButton.h"
@@ -48,8 +50,8 @@ auto MainWindow::run() {
                                 QString::fromStdString(mSerialPort));
     return;
   }
-  EspTools::ReplClient replClient(connection);
-  auto probeResult = replClient.probe();
+  auto replClient = std::make_shared<EspTools::ReplClient>(connection);
+  auto probeResult = replClient->probe();
 
   if (!probeResult.isMicroPython) {
     mLogOutput->appendPlainText(
@@ -74,11 +76,10 @@ auto MainWindow::run() {
 
   mLogOutput->appendPlainText("Uploading main.py...\n");
 
-  auto callback = [this](const std::string& message) {
+  replClient->setOnLogs([this](const std::string& message) {
     mLogOutput->appendPlainText(QString::fromStdString(message));
-  };
-
-  if (!replClient.putFile("main.py", "/main.py", callback)) {
+  });
+  if (!replClient->putFile("main.py", "/main.py")) {
     mLogOutput->appendPlainText("Failed to upload main.py!");
     return;
   }
@@ -86,7 +87,7 @@ auto MainWindow::run() {
   mLogOutput->appendPlainText("\nUpload complete.\n");
 
   mLogOutput->appendPlainText("Resetting device...\n");
-  replClient.reset();
+  replClient->resetTarget();
 
   mLogOutput->appendPlainText("Done.\n");
 }
@@ -171,7 +172,10 @@ auto MainWindow::initMenuAndToolbar() {
   toolBar->addSeparator();
   toolBar->addAction(runAction);
 
-  connect(runAction, &QAction::triggered, this, &MainWindow::run);
+  connect(runAction, &QAction::triggered, this, [this]() {
+    auto future = QtConcurrent::run([this]() { run(); });
+    (void)future;
+  });
 
   // Settings
   auto* settingsMenu = menuBar()->addMenu("&Settings");
@@ -263,7 +267,8 @@ void MainWindow::checkFirstApplicationRun() {
         "by "
         "incorrect wiring, missing resistors, or improper use of electronic "
         "components.<br><br>"
-        "Provided free and open source under the <b>Apache License 2.0</b>.<br>"
+        "Provided free and open source under the <b>Apache License "
+        "2.0</b>.<br>"
         "Use at your own risk.<br><br><br>");
     safetyMessageBox.setIcon(QMessageBox::Warning);
 

@@ -15,13 +15,13 @@ class LoopNode : public BaseNodeSchema<Schema::Loop> {
    * @brief Returns wether it is the main loop or not.
    * @return true if it is the loop main, otherwise false.
    */
-  bool isMainLoop() const { return mIsMainLoop; }
+  [[nodiscard]] bool isMainLoop() const { return mIsMainLoop; }
 
   /**
    * @brief Returns the number of iterations.
    * @return The number of iterations.
    */
-  uint32_t getIterations() const { return mIterations; }
+  [[nodiscard]] uint32_t getIterations() const { return mIterations; }
 
   /**
    * @brief Sets the number of iterations.

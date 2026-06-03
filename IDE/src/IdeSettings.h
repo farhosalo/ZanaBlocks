@@ -29,7 +29,7 @@ class SettingsDialog : public QDialog {
 
   void flash();
 
-  void shoeEnterBootloaderMessage();
+  void showEnterBootloaderMessage();
 
   QComboBox* mPortListCombo;
   QDialogButtonBox* mButtonBox;

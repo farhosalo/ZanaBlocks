@@ -174,7 +174,7 @@ void SettingsDialog::flash() {
 
   mFlasher->setOnEnterBootloader([this]() {
     QMetaObject::invokeMethod(
-        this, [this]() { shoeEnterBootloaderMessage(); }, Qt::QueuedConnection);
+        this, [this]() { showEnterBootloaderMessage(); }, Qt::QueuedConnection);
   });
 
   // NOLINTBEGIN [clang-analyzer-cplusplus.NewDeleteLeaks]
@@ -196,7 +196,7 @@ void SettingsDialog::flash() {
                  // when it goes out of scope.
   // NOLINTEND
 }
-void SettingsDialog::shoeEnterBootloaderMessage() {
+void SettingsDialog::showEnterBootloaderMessage() {
   QMessageBox enterBootloaderMessage;
   enterBootloaderMessage.setWindowTitle("ℹ Enter Bootloader Mode");
   enterBootloaderMessage.setText(

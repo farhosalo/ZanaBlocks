@@ -75,18 +75,15 @@ class ReplClient {
    * bytes have been sent.
    * @param localPath The path to the local file on the host machine.
    * @param remotePath The path where the file should be saved on the device.
-   * @param callback An optional callback function that receives progress
-   * messages.
    * @return True if the file was successfully uploaded, false otherwise.
    */
-  bool putFile(const std::string& localPath, const std::string& remotePath,
-               ProgressCallback callback = nullptr);
+  bool putFile(const std::string& localPath, const std::string& remotePath);
 
   /**
    * @brief Reset the device by sending a machine.reset() command. This will
    * cause the device to reboot.
    */
-  void reset();  // machine.reset() — full reboot
+  void resetTarget();  // machine.reset() — full reboot
 
   /**
    * @brief Probe the device to check if MicroPython is running and retrieve
@@ -99,12 +96,27 @@ class ReplClient {
    */
   ProbeResult probe();
 
+  /**
+   * @brief Set a callback function to receive log messages from the REPL
+   * client.
+   * @param callback A function that takes a string message. This will be called
+   * whenever the ReplClient has a log message to report.
+   */
+  void setOnLogs(std::function<void(const std::string&)> callback) {
+    mOnLogs = std::move(callback);
+  }
+
  private:
   void writeAll(const std::string& data);
   std::pair<RUN_STATE, std::string> readUntil(const std::string& marker,
                                               unsigned timeoutMs);
   void enterRawRepl();
   void exitRawRepl() { writeAll("\x02"); }
+  void log(const std::string& message) {
+    if (mOnLogs) {
+      mOnLogs(message);
+    }
+  }
 
   /**
    * Note: sp_port is an opaque struct defined in libserialport.h, representing
@@ -119,6 +131,12 @@ class ReplClient {
    * The size of each chunk to read/write from the serial port.
    */
   static constexpr std::size_t CHUNK_SIZE = 256;  // bytes per write call
+
+  /**
+   * Optional callback for log messages. This can be set by the caller to
+   * receive log output.
+   */
+  std::function<void(const std::string&)> mOnLogs;
 };
 
 }  // namespace ZanaBlocks::EspTools
