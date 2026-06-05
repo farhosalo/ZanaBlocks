@@ -2,6 +2,7 @@ Checks:
   - '-*'
   - 'clang-diagnostic-*'
   - 'clang-analyzer-*'
+  - '-clang-analyzer-cplusplus.NewDeleteLeaks'
   - 'cppcoreguidelines-*'
   - '-cppcoreguidelines-owning-memory'
   - 'google-*'

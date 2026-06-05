@@ -36,10 +36,10 @@ auto constexpr WINDOW_SIZE_HEIGHT{750};
 
 auto MainWindow::run() {
   // NOLINTBEGIN  [bugprone-exception-escape]
-  auto logMessage = [this](const std::string& message) {
+  auto logMessage = [this](std::string message) {
     QMetaObject::invokeMethod(
         mLogOutput,
-        [this, message]() {
+        [this, message = std::move(message)]() {
           if (mLogOutput != nullptr) {
             mLogOutput->appendPlainText(QString::fromStdString(message));
           } else {
