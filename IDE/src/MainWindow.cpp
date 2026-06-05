@@ -35,10 +35,25 @@ auto constexpr WINDOW_SIZE_WIDTH{1100};
 auto constexpr WINDOW_SIZE_HEIGHT{750};
 
 auto MainWindow::run() {
+  // NOLINTBEGIN  [bugprone-exception-escape]
+  auto logMessage = [this](const std::string& message) {
+    QMetaObject::invokeMethod(
+        mLogOutput,
+        [this, message]() {
+          if (mLogOutput != nullptr) {
+            mLogOutput->appendPlainText(QString::fromStdString(message));
+          } else {
+            ERROR("Log message received but mLogOutput is null: " << message);
+          }
+        },
+        Qt::QueuedConnection);
+  };
+  // NOLINTEND
+
   if (mSerialPort.empty()) {
     auto ports = EspTools::getUsbSerialPorts();
     if (ports.empty()) {
-      mLogOutput->appendPlainText("No serial ports found!");
+      logMessage("No serial ports found!");
       return;
     }
     mSerialPort = ports.at(0);
@@ -46,25 +61,22 @@ auto MainWindow::run() {
   auto connection = EspTools::connect(mSerialPort);
 
   if (connection == nullptr) {
-    mLogOutput->appendPlainText("Failed to connect to device: " +
-                                QString::fromStdString(mSerialPort));
+    logMessage("Failed to connect to device: " + mSerialPort);
     return;
   }
   auto replClient = std::make_shared<EspTools::ReplClient>(connection);
+  replClient->setOnLogs(logMessage);
   auto probeResult = replClient->probe();
 
   if (!probeResult.isMicroPython) {
-    mLogOutput->appendPlainText(
+    logMessage(
         "Device is not running MicroPython!, press reset (EN/RST) button and "
-        "try again. "
-        "If the problem persists, please flash MicroPython firmware to your "
-        "device.");
+        "try again. If the problem persists, please flash MicroPython firmware "
+        "to your device.");
     return;
   }
-  mLogOutput->appendPlainText(
-      "Device version : " +
-      QString::fromStdString(probeResult.firmwareVersion) + " (" +
-      QString::fromStdString(probeResult.hardwareModel) + ")");
+  logMessage("Device version : " + probeResult.firmwareVersion + " (" +
+             probeResult.hardwareModel + ")");
 
   auto schema = std::make_shared<Schema::Root>();
 
@@ -74,22 +86,19 @@ auto MainWindow::run() {
   interpreter.interpret(schema);
   interpreter.saveToFile("main.py");
 
-  mLogOutput->appendPlainText("Uploading main.py...\n");
+  logMessage("Uploading main.py...");
 
-  replClient->setOnLogs([this](const std::string& message) {
-    mLogOutput->appendPlainText(QString::fromStdString(message));
-  });
   if (!replClient->putFile("main.py", "/main.py")) {
-    mLogOutput->appendPlainText("Failed to upload main.py!");
+    logMessage("Failed to upload main.py!");
     return;
   }
 
-  mLogOutput->appendPlainText("\nUpload complete.\n");
+  logMessage("Upload complete.");
 
-  mLogOutput->appendPlainText("Resetting device...\n");
+  logMessage("Resetting device...");
   replClient->resetTarget();
 
-  mLogOutput->appendPlainText("Done.\n");
+  logMessage("Done.");
 }
 auto MainWindow::save() {
   mLogOutput->appendPlainText("Saving the program...");
