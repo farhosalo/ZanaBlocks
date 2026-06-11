@@ -89,6 +89,7 @@ void Scene::createConnection(NodePort* fromPort, NodePort* toPort) {
   fromPort->addConnection(connection);
   toPort->addConnection(connection);
   connection->updatePath();
+  setModified(true);
 }
 
 void Scene::createItemAt(const QString& type, const QPointF& pos) {
@@ -114,6 +115,7 @@ void Scene::createItemAt(const QString& type, const QPointF& pos) {
     node->setPos(pos);
     addItem(node);
   }
+  setModified(true);
 }
 
 bool Scene::serialize(const std::shared_ptr<Schema::Root>& root) {
@@ -227,6 +229,12 @@ double Scene::getPositionX(const Schema::Action* action) {
       return 0.0;
   }
   return 0.0;
+}
+void Scene::setModified(const bool isModified) {
+  if (mModified != isModified) {
+    mModified = isModified;
+    emit modified();
+  }
 }
 
 void Scene::getSleepSchema(const SleepNode* sleepNode,
