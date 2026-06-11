@@ -33,6 +33,7 @@
 namespace ZanaBlocks::IDE {
 auto constexpr WINDOW_SIZE_WIDTH{1100};
 auto constexpr WINDOW_SIZE_HEIGHT{750};
+auto constexpr WindowTitle{"ZanaBlocks IDE"};
 
 auto MainWindow::run() {
   // NOLINTBEGIN  [bugprone-exception-escape]
@@ -242,17 +243,15 @@ auto MainWindow::initSidebar() {
   mSidebar->addWidget(pwmButton);
 }
 
-MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent), mSchema(std::make_shared<Schema::Root>()) {
-  setWindowTitle("ZanaBlocks IDE");
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   resize(WINDOW_SIZE_WIDTH, WINDOW_SIZE_HEIGHT);
 
   initSidebar();
   initUI();
   initMenuAndToolbar();
+  updateTitle();
 
   // Add main loop node to the scene
-  // TODO: Only if new diagram is created, not when loading an existing one
   {
     auto* node = new LoopNode(true);
     node->setPos(0, 0);
@@ -260,6 +259,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     checkFirstApplicationRun();
   }
+
+  connect(mDiagramScene, &Scene::modified, this, [this]() { updateTitle(); });
 }
 void MainWindow::checkFirstApplicationRun() {
   QSettings settings("ZanaBlocks", "IDE");
@@ -292,5 +293,13 @@ void MainWindow::checkFirstApplicationRun() {
       settings.setValue("safetyNoticeAccepted", false);
     }
   }
+}
+
+void MainWindow::updateTitle() {
+  auto displayName = mFileName.isEmpty() ? "Untitled" : mFileName;
+  if (mDiagramScene->isModified()) {
+    displayName += "*";
+  }
+  setWindowTitle(QString("%1 - %2").arg(displayName).arg(WindowTitle));
 }
 }  // namespace ZanaBlocks::IDE
