@@ -174,9 +174,8 @@ void Scene::keyPressEvent(QKeyEvent* event) {
   QGraphicsScene::keyPressEvent(event);
 }
 void Scene::getLoopSchema(const Node* loop, Schema::Loop* loopSchema) {
-  // TODO: Sort loop elements according to X position
-
   loopSchema->CopyFrom(loop->schema());
+  loopSchema->clear_actions();
   loopSchema->mutable_position()->set_x(loop->pos().x());
   loopSchema->mutable_position()->set_y(loop->pos().y());
 
