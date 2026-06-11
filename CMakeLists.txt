@@ -15,9 +15,6 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
-add_compile_definitions(
-    QT_NO_KEYWORDS          # Avoid signal/slot macro conflicts
-)
 
 # Compiler options 
 if (MSVC)

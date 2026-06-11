@@ -7,22 +7,39 @@ configure_file(src/${PROJECT_NAME}.h.in ${PROJECT_NAME}Info.h @ONLY)
 
 add_library(lib${PROJECT_NAME}
     src/MainWindow.cpp
+    src/MainWindow.h
     src/LogOutput.cpp
+    src/LogOutput.h
     src/Node.cpp
+    src/Node.h
     src/NodeConnector.cpp
+    src/NodeConnector.h
     src/Scene.cpp
+    src/Scene.h
     src/NodePort.cpp
+    src/NodePort.h
     src/View.cpp
+    src/View.h
     src/ComponentButton.cpp
+    src/ComponentButton.h
     src/LoopNode.cpp
+    src/LoopNode.h
     src/PrintNode.cpp
+    src/PrintNode.h
     src/SleepNode.cpp
+    src/SleepNode.h
     src/LedNode.cpp 
+    src/LedNode.h
     src/NodeSettings.cpp
+    src/NodeSettings.h
     src/IdeSettings.cpp
+    src/IdeSettings.h
     src/LicenseDialog.cpp
+    src/LicenseDialog.h
     src/AboutDialog.cpp
+    src/AboutDialog.h
     src/PwmNode.cpp
+    src/PwmNode.h
 )
 
 target_link_libraries(lib${PROJECT_NAME}
