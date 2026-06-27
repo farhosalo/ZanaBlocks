@@ -191,6 +191,14 @@ bool EspFlasher::flash(const std::string& device,
   } else {
     status("Already at max supported baud rate.");
   }
+  // ── erase flash ────────────────────────────────────────────────────────────
+  status("Erasing flash memory...");
+  if (auto error = esp_loader_flash_erase(&loader);
+      error != ESP_LOADER_SUCCESS) {
+    status("Failed to erase flash: " + std::to_string(error));
+    return false;
+  }
+  status("Flash erased successfully!");
 
   // ── flash ─────────────────────────────────────────────────────────────────
   status("Flashing MicroPython (" + std::to_string(firmware.size()) +
