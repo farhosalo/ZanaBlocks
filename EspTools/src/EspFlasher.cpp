@@ -1,16 +1,21 @@
 #include "EspFlasher.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
+#include <memory>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <thread>
-#include <vector>
+#include <utility>
 
 #include "EspTools.h"
+
+namespace FS = std::filesystem;
 #include "Logging.h"
 #include "SerialPort.h"
 #include "esp_targets.h"
@@ -119,9 +124,8 @@ bool EspFlasher::flash(const std::string& device,
                        const std::string& firmwarePath) {
   mEnteredBootloaderMode.store(false);
 
-  // Validate input parameter:
-  if (!std::filesystem::exists(firmwarePath) ||
-      !std::filesystem::is_regular_file(firmwarePath)) {
+  // Validate firmware file early to fail fast
+  if (!FS::exists(firmwarePath) || !FS::is_regular_file(firmwarePath)) {
     status("Firmware file does not exist or is not a regular file");
     return false;
   }
@@ -132,17 +136,29 @@ bool EspFlasher::flash(const std::string& device,
 
   constexpr uint32_t DEFAULT_BAUD{115200};
 
-  auto firmware = loadFirmware(firmwarePath);
-  status("Firmware loaded: " + firmwarePath + " (" +
-         std::to_string(firmware.size()) + " bytes) ");
+  // Early exit if bootloader callback not provided
+  if (!mOnEnterBootloader) {
+    status("No onEnterBootloader callback provided.");
+    return false;
+  }
 
+  // Load firmware first - fail fast if invalid
+  auto firmware = loadFirmware(firmwarePath);
+  if (firmware.empty()) {
+    status("Failed to load firmware: " + firmwarePath);
+    return false;
+  }
+  status("Firmware loaded: " + firmwarePath + " (" +
+         std::to_string(firmware.size()) + " bytes)");
+
+  // Create serial port wrapper
   auto connection = ZanaBlocks::EspTools::connect(device, DEFAULT_BAUD);
-  if (connection == nullptr) {
+  if (!connection) {
     status("Failed to connect to device: " + device);
     return false;
   }
-  auto* port = createSerialPort(connection.get());
 
+  auto port = createSerialPort(connection.get());
   if (port == nullptr) {
     status("Failed to open serial port: " + device);
     return false;
@@ -153,7 +169,7 @@ bool EspFlasher::flash(const std::string& device,
   // ── connect ───────────────────────────────────────────────────────────────
   esp_loader_t loader{};
 
-  if (auto error = esp_loader_init_uart(&loader, getBaseSerialPort(port));
+  if (auto error = esp_loader_init_uart(&loader, getBaseSerialPort(port.get()));
       error != ESP_LOADER_SUCCESS) {
     status("Failed to init uart: " + std::to_string(error));
     return false;

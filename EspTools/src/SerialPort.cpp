@@ -2,7 +2,6 @@
 
 #include <libserialport.h>
 
-#include <chrono>
 #include <cstddef>
 #include <cstdio>
 #include <thread>
@@ -21,13 +20,6 @@ using std::chrono::milliseconds;
 using std::chrono::steady_clock;
 
 namespace ZanaBlocks::EspTools {
-
-struct FlashPort {
-  esp_loader_port_t mBaseFlashPort{};  // must be first
-  sp_port* mSerialPort = nullptr;
-  uint32_t mTimeoutMs = 0;
-  steady_clock::time_point mTimerStart;
-};
 
 namespace {
 /**
@@ -135,8 +127,8 @@ static const esp_loader_port_ops_t s_ops = {
     .sdio_card_init = nullptr,
 };
 
-FlashPort* createSerialPort(sp_port* serialPort) {
-  auto* flashPort = new FlashPort{};
+std::unique_ptr<FlashPort> createSerialPort(sp_port* serialPort) {
+  auto flashPort = std::make_unique<FlashPort>();
   flashPort->mBaseFlashPort.ops = &s_ops;
   flashPort->mSerialPort = serialPort;
   return flashPort;

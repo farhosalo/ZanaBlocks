@@ -2,7 +2,9 @@
 #include <atomic>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "esp_loader.h"
 
