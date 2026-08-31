@@ -15,8 +15,8 @@
 #include "SerialPort.h"
 #include "esp_targets.h"
 
-constexpr auto FAST_BAUD{230400};  // safe fallback
-auto constexpr HUNDRED = 100;
+constexpr uint32_t FAST_BAUD = 230400U;  // safe fallback baud rate
+constexpr size_t HUNDRED = 100U;         // milliseconds delay constant
 
 namespace ZanaBlocks::EspTools {
 
@@ -77,15 +77,21 @@ void EspFlasher::flashFirmware(esp_loader_t* loader, const uint32_t addr,
   // BLOCK-sized scratch buffer — library writes its own 0xFF padding into
   // the tail of this buffer, past the actual chunk bytes
   auto constexpr Padding = 0xFF;
-  Bytes block(BLOCK, Padding);
+  Bytes block(BLOCK, static_cast<uint8_t>(Padding));
 
   uint32_t written = 0;
-  while (written < firmware.size()) {
-    const auto chunk = static_cast<uint32_t>(
-        std::min<size_t>(BLOCK, firmware.size() - written));
+  while (written < imageSize) {
+    const auto chunk =
+        static_cast<uint32_t>(std::min<size_t>(BLOCK, imageSize - written));
 
-    std::copy(firmware.begin() + written, firmware.begin() + written + chunk,
-              block.begin());
+    std::ranges::fill(block, static_cast<uint8_t>(Padding));
+
+    if (written < firmware.size()) {
+      const auto actualBytes = static_cast<uint32_t>(
+          std::min<size_t>(chunk, firmware.size() - written));
+      std::copy(firmware.begin() + written,
+                firmware.begin() + written + actualBytes, block.begin());
+    }
 
     // Pass actual chunk size — library pads block[] and sends BLOCK bytes,
     // but only accumulates MD5 over `chunk` bytes
@@ -97,7 +103,7 @@ void EspFlasher::flashFirmware(esp_loader_t* loader, const uint32_t addr,
 
     written += chunk;
     progress(static_cast<int32_t>(static_cast<uint64_t>(written) * HUNDRED /
-                                  firmware.size()));
+                                  imageSize));
     fflush(stdout);
   }
 
@@ -111,13 +117,26 @@ void EspFlasher::flashFirmware(esp_loader_t* loader, const uint32_t addr,
 
 bool EspFlasher::flash(const std::string& device,
                        const std::string& firmwarePath) {
-  constexpr uint32_t DEFAULT_BUAD{115200};
+  mEnteredBootloaderMode.store(false);
+
+  // Validate input parameter:
+  if (!std::filesystem::exists(firmwarePath) ||
+      !std::filesystem::is_regular_file(firmwarePath)) {
+    status("Firmware file does not exist or is not a regular file");
+    return false;
+  }
+  if (device.empty()) {
+    status("Device name is empty");
+    return false;
+  }
+
+  constexpr uint32_t DEFAULT_BAUD{115200};
 
   auto firmware = loadFirmware(firmwarePath);
   status("Firmware loaded: " + firmwarePath + " (" +
          std::to_string(firmware.size()) + " bytes) ");
 
-  auto connection = ZanaBlocks::EspTools::connect(device, DEFAULT_BUAD);
+  auto connection = ZanaBlocks::EspTools::connect(device, DEFAULT_BAUD);
   if (connection == nullptr) {
     status("Failed to connect to device: " + device);
     return false;
@@ -128,7 +147,7 @@ bool EspFlasher::flash(const std::string& device,
     status("Failed to open serial port: " + device);
     return false;
   }
-  status("Serial port opened: " + device + " @" + std::to_string(DEFAULT_BUAD) +
+  status("Serial port opened: " + device + " @" + std::to_string(DEFAULT_BAUD) +
          " baud");
 
   // ── connect ───────────────────────────────────────────────────────────────
@@ -141,7 +160,7 @@ bool EspFlasher::flash(const std::string& device,
   }
   status("UART initialized.");
 
-  status("Connecting on " + device + " @" + std::to_string(DEFAULT_BUAD) +
+  status("Connecting on " + device + " @" + std::to_string(DEFAULT_BAUD) +
          " baud...");
   esp_loader_connect_args_t conn{};
   constexpr int CONNECT_TRIALS = 20;
@@ -180,13 +199,13 @@ bool EspFlasher::flash(const std::string& device,
   const uint32_t flashAddr = flashAddrOpt.value();
 
   // ── bump baud ─────────────────────────────────────────────────────────────
-  if (FAST_BAUD > static_cast<int>(DEFAULT_BUAD)) {
+  if (FAST_BAUD > static_cast<int>(DEFAULT_BAUD)) {
     if (esp_loader_change_transmission_rate(&loader, FAST_BAUD) ==
         ESP_LOADER_SUCCESS) {
       status("Switched to " + std::to_string(FAST_BAUD) + "baud");
     } else {
       status("Baud rate bump failed, staying at " +
-             std::to_string(DEFAULT_BUAD) + "baud.");
+             std::to_string(DEFAULT_BAUD) + "baud.");
     }
   } else {
     status("Already at max supported baud rate.");
