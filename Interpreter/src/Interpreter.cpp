@@ -3,8 +3,12 @@
 #include <fstream>
 
 #include "Logging.h"
+#include "StringUtils.h"
 
 namespace ZanaBlocks::Interpreter {
+
+using Utilities::escapeString;
+using Utilities::safeToString;
 
 bool Interpreter::interpret(const std::shared_ptr<Schema::Root>& schema) {
   reset();
@@ -16,22 +20,22 @@ bool Interpreter::interpret(const std::shared_ptr<Schema::Root>& schema) {
 }
 
 auto Interpreter::extractPrint(const Schema::Print& print) {
-  auto line = "print(\"" + print.msg() + "\")";
+  auto line = "print(\"" + escapeString(print.msg()) + "\")";
   mLines.emplace_back(mCurrentLevel, line);
 }
 
 auto Interpreter::extractSleep(const Schema::Sleep& sleep) {
   mImports.insert("from time import sleep_ms");
 
-  auto line = "sleep_ms(" + std::to_string(sleep.duration()) + ")";
+  auto line = "sleep_ms(" + safeToString(sleep.duration()) + ")";
   mLines.emplace_back(mCurrentLevel, line);
 }
 
 auto Interpreter::extractLed(const Schema::LED& led) {
   mImports.insert("from machine import Pin");
 
-  auto varName = "led_" + std::to_string(led.pin());
-  auto line = varName + "  = Pin(" + std::to_string(led.pin()) + ", Pin.OUT)";
+  auto varName = "led_" + safeToString(led.pin());
+  auto line = varName + " = Pin(" + safeToString(led.pin()) + ", Pin.OUT)";
 
   mGlobalVariables.insert(line);
 
@@ -43,13 +47,13 @@ auto Interpreter::extractLed(const Schema::LED& led) {
 auto Interpreter::extractPwm(const Schema::Pwm& pwm) {
   mImports.insert("from machine import PWM");
 
-  auto varName = "pwm_" + std::to_string(pwm.pin());
-  auto line = varName + " = PWM(Pin(" + std::to_string(pwm.pin()) + "))";
+  auto varName = "pwm_" + safeToString(pwm.pin());
+  auto line = varName + " = PWM(Pin(" + safeToString(pwm.pin()) + "))";
   mGlobalVariables.insert(line);
 
-  line = varName + ".duty(" + std::to_string(pwm.duty()) + ")";
+  line = varName + ".duty(" + safeToString(pwm.duty()) + ")";
   mLines.emplace_back(mCurrentLevel, line);
-  line = varName + ".freq(" + std::to_string(pwm.frequency()) + ")";
+  line = varName + ".freq(" + safeToString(pwm.frequency()) + ")";
   mLines.emplace_back(mCurrentLevel, line);
 }
 
@@ -90,7 +94,7 @@ bool Interpreter::extractLoop(const Schema::Loop& loop) {
   if (loop.count() <= 0) {
     line = "while True:";
   } else {
-    line = "for i in range(" + std::to_string(loop.count()) + "):";
+    line = "for i in range(" + safeToString(loop.count()) + "):";
   }
   mLines.emplace_back(mCurrentLevel, line);
   mCurrentLevel++;
@@ -116,4 +120,5 @@ bool Interpreter::extractLoop(const Schema::Loop& loop) {
 
   return true;
 }
+
 }  // namespace ZanaBlocks::Interpreter

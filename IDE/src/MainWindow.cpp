@@ -88,7 +88,10 @@ auto MainWindow::run() {
   mDiagramScene->serialize(schema);
 
   Interpreter::Interpreter interpreter;
-  interpreter.interpret(schema);
+  if (!interpreter.interpret(schema)) {
+    ERROR("Failed to interpret the schema");
+    return;
+  }
   interpreter.saveToFile("main.py");
 
   logMessage("Uploading main.py...");

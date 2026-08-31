@@ -2,7 +2,6 @@
 #include "Schema.pb.h"
 
 namespace ZanaBlocks::Interpreter {
-
 /**
  * The Interpreter class is responsible for interpreting a given schema and
  * generating corresponding code lines. It supports interpreting loops, print
@@ -20,7 +19,7 @@ class Interpreter {
    * @param schema The schema to interpret
    * @return true if interpretation is successful, false otherwise
    */
-  bool interpret(const std::shared_ptr<Schema::Root>& schema);
+  [[nodiscard]] bool interpret(const std::shared_ptr<Schema::Root>& schema);
 
   /**
    * Saves the generated code lines to a file.
@@ -30,7 +29,7 @@ class Interpreter {
   bool saveToFile(const std::string& filename);
 
  private:
-  bool extractLoop(const Schema::Loop& loop);
+  [[nodiscard]] bool extractLoop(const Schema::Loop& loop);
   auto extractPrint(const Schema::Print& print);
   auto extractSleep(const Schema::Sleep& sleep);
   auto extractLed(const Schema::LED& led);
