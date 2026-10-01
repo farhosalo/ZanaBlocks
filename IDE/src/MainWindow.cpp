@@ -63,15 +63,15 @@ auto MainWindow::run() {
     }
     mSerialPort = ports.at(0);
   }
-  auto connection = EspTools::connect(mSerialPort);
+  const auto connection = EspTools::connect(mSerialPort);
 
   if (connection == nullptr) {
     logMessage("Failed to connect to device: " + mSerialPort);
     return;
   }
-  auto replClient = std::make_shared<EspTools::ReplClient>(connection);
+  const auto replClient = std::make_shared<EspTools::ReplClient>(connection);
   replClient->setOnLogs(logMessage);
-  auto probeResult = replClient->probe();
+  const auto probeResult = replClient->probe();
 
   if (!probeResult.isMicroPython) {
     logMessage(
@@ -83,7 +83,7 @@ auto MainWindow::run() {
   logMessage("Device version : " + probeResult.firmwareVersion + " (" +
              probeResult.hardwareModel + ")");
 
-  auto schema = std::make_shared<Schema::Root>();
+  const auto schema = std::make_shared<Schema::Root>();
 
   mDiagramScene->serialize(schema);
 
@@ -132,7 +132,7 @@ void MainWindow::save() {
     return;
   }
   if (!mFileName.isEmpty()) {
-    auto schema = std::make_shared<Schema::Root>();
+    const auto schema = std::make_shared<Schema::Root>();
     mDiagramScene->serialize(schema);
     // INFO(schema->DebugString());
 
@@ -153,7 +153,7 @@ auto MainWindow::open() {
       this, tr("Open File"), "", tr("Binary Files (*.bin);;All Files (*)"));
 
   if (!fileName.isEmpty()) {
-    auto schema = std::make_shared<Schema::Root>();
+    const auto schema = std::make_shared<Schema::Root>();
     if (Utilities::loadProtobufFromFile(fileName.toStdString(), *schema)) {
       mDiagramScene->load(schema);
 
@@ -169,7 +169,7 @@ auto MainWindow::open() {
 auto MainWindow::settings() {
   SettingsDialog dialog(this);
   if (dialog.exec() == QDialog::Accepted) {
-    auto* port = dialog.findChild<QComboBox*>("Port:");
+    const auto* port = dialog.findChild<QComboBox*>("Port:");
     if (port != nullptr) {
       mSerialPort = port->currentText().toStdString();
     }
@@ -264,8 +264,8 @@ auto MainWindow::initMenuAndToolbar() {
   toolBar->addSeparator();
   toolBar->addAction(runAction);
 
-  connect(runAction, &QAction::triggered, this, [this]() {
-    auto future = QtConcurrent::run([this]() { run(); });
+  connect(runAction, &QAction::triggered, this, [this] {
+    const auto future = QtConcurrent::run([this] { run(); });
     (void)future;
   });
 
@@ -289,12 +289,12 @@ auto MainWindow::initMenuAndToolbar() {
   toolBar->addAction(aboutAction);
   toolBar->addAction(licensesAction);
 
-  connect(aboutAction, &QAction::triggered, this, [this]() {
+  connect(aboutAction, &QAction::triggered, this, [this] {
     AboutDialog dialog(this);
     dialog.exec();
   });
 
-  connect(licensesAction, &QAction::triggered, this, [this]() {
+  connect(licensesAction, &QAction::triggered, this, [this] {
     LicensesDialog dialog(this);
     dialog.exec();
   });
@@ -345,7 +345,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
   checkFirstApplicationRun();
 
-  connect(mDiagramScene, &Scene::modified, this, [this]() { updateTitle(); });
+  connect(mDiagramScene, &Scene::modified, this, [this] { updateTitle(); });
 }
 void MainWindow::checkFirstApplicationRun() {
   QSettings settings("ZanaBlocks", "IDE");
@@ -390,7 +390,7 @@ void MainWindow::updateTitle() {
 bool MainWindow::showUnsavedDiagramWarning() {
   if (mDiagramScene->isModified()) {
     // QMessageBox::StandardButton reply;
-    auto reply = QMessageBox::warning(
+    const auto reply = QMessageBox::warning(
         this, "Unsaved Diagram",
         "The current diagram has unsaved changes. Do you want to save them?",
         QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);

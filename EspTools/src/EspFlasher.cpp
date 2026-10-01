@@ -31,7 +31,7 @@ Bytes EspFlasher::loadFirmware(const std::string& path) {
     status("Cannot open: " + path);
     return {};
   }
-  auto size = firmwareFile.tellg();
+  const auto size = firmwareFile.tellg();
   firmwareFile.seekg(0);
   Bytes firmware(static_cast<size_t>(size));
   // NOLINTNEXTLINE [cppcoreguidelines-pro-type-reinterpret-cast]
@@ -73,7 +73,7 @@ void EspFlasher::flashFirmware(esp_loader_t* loader, const uint32_t addr,
   cfg.block_size = BLOCK;
   cfg.skip_verify = false;
 
-  if (auto error = esp_loader_flash_start(loader, &cfg);
+  if (const auto error = esp_loader_flash_start(loader, &cfg);
       error != ESP_LOADER_SUCCESS) {
     status("Failed to start flash: " + std::to_string(error));
     return;
@@ -100,7 +100,8 @@ void EspFlasher::flashFirmware(esp_loader_t* loader, const uint32_t addr,
 
     // Pass actual chunk size — library pads block[] and sends BLOCK bytes,
     // but only accumulates MD5 over `chunk` bytes
-    if (auto error = esp_loader_flash_write(loader, &cfg, block.data(), chunk);
+    if (const auto error =
+            esp_loader_flash_write(loader, &cfg, block.data(), chunk);
         error != ESP_LOADER_SUCCESS) {
       status("Failed to write flash: " + std::to_string(error));
       return;
@@ -112,7 +113,7 @@ void EspFlasher::flashFirmware(esp_loader_t* loader, const uint32_t addr,
     fflush(stdout);
   }
 
-  if (auto error = esp_loader_flash_finish(loader, &cfg);
+  if (const auto error = esp_loader_flash_finish(loader, &cfg);
       error != ESP_LOADER_SUCCESS) {
     status("Failed to finish flash: " + std::to_string(error));
     return;
@@ -143,7 +144,7 @@ bool EspFlasher::flash(const std::string& device,
   }
 
   // Load firmware first - fail fast if invalid
-  auto firmware = loadFirmware(firmwarePath);
+  const auto firmware = loadFirmware(firmwarePath);
   if (firmware.empty()) {
     status("Failed to load firmware: " + firmwarePath);
     return false;
@@ -152,13 +153,13 @@ bool EspFlasher::flash(const std::string& device,
          std::to_string(firmware.size()) + " bytes)");
 
   // Create serial port wrapper
-  auto connection = ZanaBlocks::EspTools::connect(device, DEFAULT_BAUD);
+  const auto connection = ZanaBlocks::EspTools::connect(device, DEFAULT_BAUD);
   if (!connection) {
     status("Failed to connect to device: " + device);
     return false;
   }
 
-  auto port = createSerialPort(connection.get());
+  const auto port = createSerialPort(connection.get());
   if (port == nullptr) {
     status("Failed to open serial port: " + device);
     return false;
@@ -169,7 +170,8 @@ bool EspFlasher::flash(const std::string& device,
   // ── connect ───────────────────────────────────────────────────────────────
   esp_loader_t loader{};
 
-  if (auto error = esp_loader_init_uart(&loader, getBaseSerialPort(port.get()));
+  if (const auto error =
+          esp_loader_init_uart(&loader, getBaseSerialPort(port.get()));
       error != ESP_LOADER_SUCCESS) {
     status("Failed to init uart: " + std::to_string(error));
     return false;
@@ -198,7 +200,7 @@ bool EspFlasher::flash(const std::string& device,
   }
   // Note: esp_loader_connect() internally toggles DTR/RTS to reset the chip
   // into bootloader mode, so no need to do it ourselves in op_enter_bootloader
-  if (auto error = esp_loader_connect(&loader, &conn);
+  if (const auto error = esp_loader_connect(&loader, &conn);
       error != ESP_LOADER_SUCCESS) {
     status("Failed to connect: " + std::to_string(error));
     return false;
@@ -228,7 +230,7 @@ bool EspFlasher::flash(const std::string& device,
   }
   // ── erase flash ────────────────────────────────────────────────────────────
   status("Erasing flash memory...");
-  if (auto error = esp_loader_flash_erase(&loader);
+  if (const auto error = esp_loader_flash_erase(&loader);
       error != ESP_LOADER_SUCCESS) {
     status("Failed to erase flash: " + std::to_string(error));
     return false;

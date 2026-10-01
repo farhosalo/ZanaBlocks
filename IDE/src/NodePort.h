@@ -14,7 +14,7 @@ enum class PORT_TYPE : uint8_t {
   INPUT,          ///< Single-connector input port (only one connection allowed)
   SINGLE_OUTPUT,  ///< Single-connector output port (only one connection
                   ///< allowed)
-  MULTI_OUTPUT  ///< Multi-connector output port (multiple connections allowed)
+  MULTI_OUTPUT,  ///< Multi-connector output port (multiple connections allowed)
 };
 
 /**

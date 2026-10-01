@@ -143,7 +143,7 @@ QVariant Node::itemChange(const GraphicsItemChange change,
     }
 
     // TODO: Save the new position to the model
-    for (auto* port : mPorts) {
+    for (const auto* port : mPorts) {
       for (auto* conn : port->connections()) {
         conn->updatePath();
       }

@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <memory>
 
 #include "esp_loader_io.h"
 

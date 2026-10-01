@@ -40,11 +40,11 @@ inline std::string escapeString(const std::string& str) noexcept {
 /**
  * @brief Safely converts an integer to a string representation.
  *
- * This function converts any signed integer value to its string form using
+ * This function converts any number value to its string form using
  * std::to_string, with exception handling for edge cases where conversion
  * might fail (out_of_range exceptions).
  *
- * @param num The integer value to convert to a string.
+ * @param num The number value to convert to a string.
  * @return A string representation of the number if successful, empty string if
  * conversion would fail due to out-of-range values.
  *
@@ -52,11 +52,13 @@ inline std::string escapeString(const std::string& str) noexcept {
  * @note Thread-safe: no shared mutable state, safe to call from multiple
  * threads.
  */
-inline std::string safeToString(const int num) noexcept {
+
+template <typename Number,
+          std::enable_if_t<std::is_arithmetic_v<Number>, int> = 0>
+inline std::string safeToString(Number num) noexcept {
   try {
     return std::to_string(num);
   } catch (const std::out_of_range&) {
-    // Handle out of range error by returning an empty string as a safe fallback
     return "";
   }
 }

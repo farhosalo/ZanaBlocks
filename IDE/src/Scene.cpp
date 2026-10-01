@@ -59,25 +59,25 @@ void Scene::createConnection(NodePort* fromPort, NodePort* toPort) {
     return;
   }
 
-  auto* fromNode = fromPort->parentNode();
-  auto* toNode = toPort->parentNode();
+  const auto* fromNode = fromPort->parentNode();
+  const auto* toNode = toPort->parentNode();
   if (fromNode == nullptr || toNode == nullptr || fromNode == toNode) {
     return;
   }
 
   // Check ALL ports of fromNode, not just the one being connected
-  for (auto* port : fromNode->getPorts()) {
-    for (auto* conn : port->connections()) {
-      auto* otherNode = (conn->getStartPort()->parentNode() == fromNode)
-                            ? conn->getEndPort()->parentNode()
-                            : conn->getStartPort()->parentNode();
+  for (const auto* port : fromNode->getPorts()) {
+    for (const auto* conn : port->connections()) {
+      const auto* otherNode = (conn->getStartPort()->parentNode() == fromNode)
+                                  ? conn->getEndPort()->parentNode()
+                                  : conn->getStartPort()->parentNode();
       if (otherNode == toNode) {
         return;
       }
     }
   }
 
-  for (auto* port : toNode->getPorts()) {
+  for (const auto* port : toNode->getPorts()) {
     if (port->getType() == PORT_TYPE::INPUT && !port->connections().isEmpty()) {
       return;  // Target node already has a connection to a single-connector
                // port
@@ -122,12 +122,11 @@ bool Scene::serialize(const std::shared_ptr<Schema::Root>& root) {
   const LoopNode* mainLoop = nullptr;
 
   // Find the main loop node
-  for (auto* item : items()) {
-    if (auto* node = dynamic_cast<LoopNode*>(item)) {
-      if (node->isMainLoop()) {
-        mainLoop = node;
-        break;
-      }
+  for (const auto* item : items()) {
+    const auto* node = dynamic_cast<const LoopNode*>(item);
+    if (node != nullptr && node->isMainLoop()) {
+      mainLoop = node;
+      break;
     }
   }
 
@@ -195,19 +194,23 @@ void Scene::getLoopSchema(const Node* loop, Schema::Loop* loopSchema) {
   loopSchema->mutable_position()->set_x(loop->pos().x());
   loopSchema->mutable_position()->set_y(loop->pos().y());
 
-  for (auto* port : loop->getPorts()) {
+  for (const auto* port : loop->getPorts()) {
     if (port->getType() != PORT_TYPE::INPUT) {
-      for (auto* connection : port->connections()) {
-        Node* targetNode = connection->getEndPort()->parentNode();
-        if (auto* loopNode = dynamic_cast<LoopNode*>(targetNode)) {
+      for (const auto* connection : port->connections()) {
+        const auto* targetNode = connection->getEndPort()->parentNode();
+        if (const auto* loopNode = dynamic_cast<const LoopNode*>(targetNode)) {
           getLoopSchema(loopNode, loopSchema->add_actions()->mutable_loop());
-        } else if (auto* printNode = dynamic_cast<PrintNode*>(targetNode)) {
+        } else if (const auto* printNode =
+                       dynamic_cast<const PrintNode*>(targetNode)) {
           getPrintSchema(printNode, loopSchema->add_actions()->mutable_print());
-        } else if (auto* sleepNode = dynamic_cast<SleepNode*>(targetNode)) {
+        } else if (const auto* sleepNode =
+                       dynamic_cast<const SleepNode*>(targetNode)) {
           getSleepSchema(sleepNode, loopSchema->add_actions()->mutable_sleep());
-        } else if (auto* ledNode = dynamic_cast<LedNode*>(targetNode)) {
+        } else if (const auto* ledNode =
+                       dynamic_cast<const LedNode*>(targetNode)) {
           getLedSchema(ledNode, loopSchema->add_actions()->mutable_led());
-        } else if (auto* pwmNode = dynamic_cast<PwmNode*>(targetNode)) {
+        } else if (const auto* pwmNode =
+                       dynamic_cast<const PwmNode*>(targetNode)) {
           getPwmSchema(pwmNode, loopSchema->add_actions()->mutable_pwm());
         } else {
           ERROR("Unknown node type connected to loop: "
@@ -364,14 +367,13 @@ void Scene::deleteConnection(NodeConnector* conn) {
 }
 void Scene::deleteSelectedNodes() {
   for (QGraphicsItem* item : selectedItems()) {
-    if (auto* node = dynamic_cast<LoopNode*>(item)) {
-      if (node->isMainLoop()) {
-        // Don't delete the main loop node
-        continue;
-      }
+    if (const auto* loopNode = dynamic_cast<LoopNode*>(item);
+        loopNode != nullptr && loopNode->isMainLoop()) {
+      // Don't delete the main loop node
+      continue;
     }
-    if (auto* node = dynamic_cast<Node*>(item)) {
-      for (auto* port : node->getPorts()) {
+    if (const auto* node = dynamic_cast<Node*>(item)) {
+      for (const auto* port : node->getPorts()) {
         for (auto* conn : port->connections()) {
           deleteConnection(conn);
         }

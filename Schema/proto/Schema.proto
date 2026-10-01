@@ -16,20 +16,20 @@ message Print{
 // A sleep action that can be used to pause execution for a specified duration.
 message Sleep{
     Position position = 1; // position to print the message
-    int32 duration = 2; // duration in milliseconds
+    uint32 duration = 2; // duration in milliseconds
 }
 
 // An LED action that can be used to control an LED on the device.
 message LED{
     Position position = 1; // position to control the LED
-    int32 pin = 2; // which LED to control
+    uint32 pin = 2; // which LED to control
     bool state = 3; // true for on, false for off
 }
 
 // A loop that can contain multiple actions, which can be prints, sleeps, or nested loops.
 message Loop {
     Position position = 1; // position to print the message
-    int32 count = 2; // number of iterations
+    uint32 count = 2; // number of iterations
     repeated Action actions = 3; // actions to perform in each iteration
     // You can add more fields here if needed, such as a condition for the loop to break early  
 }
@@ -37,9 +37,9 @@ message Loop {
 // A PWM action that can be used to control a PWM signal on the device.
 message Pwm {
     Position position = 1; // position to control the PWM
-    int32 pin = 2; // which pin to control
-    int32 duty = 3; 
-    int32 frequency = 4; // frequency in Hz
+    uint32 pin = 2; // which pin to control
+    uint32 duty = 3; 
+    uint32 frequency = 4; // frequency in Hz
 }
 
 // A single action to perform, which can be a print, sleep, or another loop.

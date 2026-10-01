@@ -74,6 +74,12 @@ install(FILES ${LICENSE_FILES}
     DESTINATION share/licenses
 )
 
+option(ENABLE_TESTS "Enable tests" ON)
+
+if (${ENABLE_TESTS})
+    enable_testing()
+endif()
+
 add_subdirectory(Schema)
 add_subdirectory(Interpreter)
 add_subdirectory(EspTools)

@@ -1,4 +1,10 @@
 #pragma once
+#ifndef LOGGING_H
+#define LOGGING_H
+
+#ifdef LOG
+#undef LOG
+#endif
 
 #include "DateTime.h"
 
@@ -27,3 +33,4 @@ auto constexpr PURPLE{"\033[35m"};
     std::exit(EXIT_FAILURE); \
   } while (0)
 // NOLINTEND
+#endif  // LOGGING_H

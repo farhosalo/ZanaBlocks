@@ -40,3 +40,20 @@ install(TARGETS ${PROJECT_NAME}
 install(FILES ${HEADERS}
     DESTINATION include/${PROJECT_NAME}
 )
+
+if (${ENABLE_TESTS})
+add_executable(${PROJECT_NAME}Test
+    tests/InterpreterTest.cpp
+    tests/PrintTest.cpp
+    tests/LoopTest.cpp
+    tests/SleepTest.cpp
+    tests/LedTest.cpp
+    tests/PwmTest.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}Test
+Interpreter gtest gtest_main
+)
+
+add_test(${PROJECT_NAME}Test ${PROJECT_NAME}Test)
+endif()
