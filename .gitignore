@@ -5,3 +5,7 @@ install/*
 .vscode/*
 *.bak
 .DS_Store
+.opencode
+.clinerules
+AGENTS.md
+Testing/*

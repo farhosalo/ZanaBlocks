@@ -54,9 +54,9 @@ void SettingsDialog::addPortSettings(QFormLayout* layout) {
 
   auto* refreshBtn = new QPushButton(tr("Refresh"));
 
-  auto refreshPorts = [this] {
+  const auto refreshPorts = [this] {
     mPortListCombo->clear();
-    auto ports = EspTools::getUsbSerialPorts();
+    const auto ports = EspTools::getUsbSerialPorts();
 
     QStringList list;
     list.reserve(static_cast<qsizetype>(ports.size()));
@@ -111,7 +111,7 @@ void SettingsDialog::addFlashSettings(QFormLayout* layout) {
   mFlashLogs->setMaximumBlockCount(maxLogBlockCount);
   layout->addWidget(mFlashLogs);
 
-  connect(mFlashButton, &QPushButton::clicked, this, [this]() {
+  connect(mFlashButton, &QPushButton::clicked, this, [this] {
     mFlashLogs->clear();
     mFlashProgressBar->setValue(0);
 
@@ -145,7 +145,7 @@ void SettingsDialog::flash() {
 
   mFlasher->setOnProgress([this](int progress) {
     QMetaObject::invokeMethod(
-        this, [this, progress]() { mFlashProgressBar->setValue(progress); },
+        this, [this, progress] { mFlashProgressBar->setValue(progress); },
         Qt::QueuedConnection);
   });
 
@@ -172,13 +172,13 @@ void SettingsDialog::flash() {
   });
   // NOLINTEND
 
-  mFlasher->setOnEnterBootloader([this]() {
+  mFlasher->setOnEnterBootloader([this] {
     QMetaObject::invokeMethod(
-        this, [this]() { showEnterBootloaderMessage(); }, Qt::QueuedConnection);
+        this, [this] { showEnterBootloaderMessage(); }, Qt::QueuedConnection);
   });
 
   // NOLINTBEGIN [clang-analyzer-cplusplus.NewDeleteLeaks]
-  auto future = QtConcurrent::run([this]() {
+  auto future = QtConcurrent::run([this] {
     enableSettings(false);
     const bool success =
         mFlasher->flash(mPortListCombo->currentText().toStdString(),

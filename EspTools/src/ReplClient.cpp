@@ -28,7 +28,7 @@ bool ReplClient::putFile(const std::string& localPath,
     return false;
   }
 
-  auto fileSize = static_cast<std::size_t>(file.tellg());
+  const auto fileSize = static_cast<std::size_t>(file.tellg());
   file.seekg(0);
 
   std::vector<uint8_t> contents(fileSize);
@@ -167,7 +167,7 @@ ProbeResult ReplClient::probe() {
 
   // Raw REPL wraps stdout as: OK<stdout>\x04<stderr>\x04>
   // Grab only the stdout portion
-  auto endPos = output.find('\x04');
+  const auto endPos = output.find('\x04');
   std::string out =
       (endPos != std::string::npos) ? output.substr(0, endPos) : output;
 
@@ -177,7 +177,7 @@ ProbeResult ReplClient::probe() {
   }
 
   // Trim surrounding whitespace / CR LF
-  auto trimmed = [](std::string str) {
+  const auto trimmed = [](std::string str) {
     str.erase(0, str.find_first_not_of(" \t\r\n"));
     str.erase(str.find_last_not_of(" \t\r\n") + 1);
     return str;
@@ -185,7 +185,8 @@ ProbeResult ReplClient::probe() {
   out = trimmed(out);
 
   // Split on '|'
-  auto splitPipe = [](const std::string& split) -> std::vector<std::string> {
+  const auto splitPipe =
+      [](const std::string& split) -> std::vector<std::string> {
     std::vector<std::string> parts;
     std::size_t start = 0;
     std::size_t pos = 0;

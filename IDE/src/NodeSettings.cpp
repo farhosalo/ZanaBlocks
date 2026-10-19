@@ -64,9 +64,17 @@ void NodeSettings::buildSettingsDialog(QFormLayout* layout) {
         layout->addRow(label, edit);
         break;
       }
+      case FieldDescriptor::CPPTYPE_UINT32: {
+        auto* spin = new QSpinBox(this);
+        spin->setRange(0, INT_MAX);
+        spin->setValue(static_cast<int32_t>(
+            refl->GetUInt32(mSchema, field)));  // cast is safe for UI
+        spin->setObjectName(label);
+        layout->addRow(label, spin);
+        break;
+      }
       case FieldDescriptor::CPPTYPE_INT32:
       case FieldDescriptor::CPPTYPE_INT64:
-      case FieldDescriptor::CPPTYPE_UINT32:
       case FieldDescriptor::CPPTYPE_UINT64: {
         auto* spin = new QSpinBox(this);
         spin->setRange(INT_MIN, INT_MAX);
@@ -100,20 +108,25 @@ void NodeSettings::save() {
 
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_STRING:
-        if (auto* widget = findChild<QLineEdit*>(name)) {
+        if (const auto* widget = findChild<QLineEdit*>(name)) {
           refl->SetString(&mSchema, field, widget->text().toStdString());
+        }
+        break;
+      case FieldDescriptor::CPPTYPE_UINT32:
+        if (const auto* widget = findChild<QSpinBox*>(name)) {
+          refl->SetUInt32(&mSchema, field,
+                          static_cast<uint32_t>(widget->value()));
         }
         break;
       case FieldDescriptor::CPPTYPE_INT32:
       case FieldDescriptor::CPPTYPE_INT64:
-      case FieldDescriptor::CPPTYPE_UINT32:
       case FieldDescriptor::CPPTYPE_UINT64:
-        if (auto* widget = findChild<QSpinBox*>(name)) {
+        if (const auto* widget = findChild<QSpinBox*>(name)) {
           refl->SetInt32(&mSchema, field, widget->value());
         }
         break;
       case FieldDescriptor::CPPTYPE_BOOL:
-        if (auto* widget = findChild<QCheckBox*>(name)) {
+        if (const auto* widget = findChild<QCheckBox*>(name)) {
           refl->SetBool(&mSchema, field, widget->isChecked());
         }
         break;

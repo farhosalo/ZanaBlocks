@@ -5,6 +5,7 @@
 
 #include "NodePort.h"
 #include "NodeSettings.h"
+#include "Scene.h"
 
 namespace ZanaBlocks::IDE {
 auto constexpr Width{120.0};
@@ -72,6 +73,9 @@ void Node::hoverLeaveEvent(QGraphicsSceneHoverEvent* event) {
 void Node::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) {
   NodeSettings dialog(getDescription(), schema());
   if (dialog.exec() == QDialog::Accepted) {
+    if (auto* scene = qobject_cast<Scene*>(this->scene())) {
+      scene->setModified(true);
+    }
     onSchemaChanged();
   }
 
@@ -134,8 +138,12 @@ void Node::showOutputPorts() {
 QVariant Node::itemChange(const GraphicsItemChange change,
                           const QVariant& value) {
   if (change == ItemPositionHasChanged) {
+    if (auto* scene = qobject_cast<Scene*>(this->scene())) {
+      scene->setModified(true);
+    }
+
     // TODO: Save the new position to the model
-    for (auto* port : mPorts) {
+    for (const auto* port : mPorts) {
       for (auto* conn : port->connections()) {
         conn->updatePath();
       }

@@ -59,25 +59,25 @@ void Scene::createConnection(NodePort* fromPort, NodePort* toPort) {
     return;
   }
 
-  auto* fromNode = fromPort->parentNode();
-  auto* toNode = toPort->parentNode();
+  const auto* fromNode = fromPort->parentNode();
+  const auto* toNode = toPort->parentNode();
   if (fromNode == nullptr || toNode == nullptr || fromNode == toNode) {
     return;
   }
 
   // Check ALL ports of fromNode, not just the one being connected
-  for (auto* port : fromNode->getPorts()) {
-    for (auto* conn : port->connections()) {
-      auto* otherNode = (conn->getStartPort()->parentNode() == fromNode)
-                            ? conn->getEndPort()->parentNode()
-                            : conn->getStartPort()->parentNode();
+  for (const auto* port : fromNode->getPorts()) {
+    for (const auto* conn : port->connections()) {
+      const auto* otherNode = (conn->getStartPort()->parentNode() == fromNode)
+                                  ? conn->getEndPort()->parentNode()
+                                  : conn->getStartPort()->parentNode();
       if (otherNode == toNode) {
         return;
       }
     }
   }
 
-  for (auto* port : toNode->getPorts()) {
+  for (const auto* port : toNode->getPorts()) {
     if (port->getType() == PORT_TYPE::INPUT && !port->connections().isEmpty()) {
       return;  // Target node already has a connection to a single-connector
                // port
@@ -89,6 +89,7 @@ void Scene::createConnection(NodePort* fromPort, NodePort* toPort) {
   fromPort->addConnection(connection);
   toPort->addConnection(connection);
   connection->updatePath();
+  setModified(true);
 }
 
 void Scene::createItemAt(const QString& type, const QPointF& pos) {
@@ -114,18 +115,18 @@ void Scene::createItemAt(const QString& type, const QPointF& pos) {
     node->setPos(pos);
     addItem(node);
   }
+  setModified(true);
 }
 
 bool Scene::serialize(const std::shared_ptr<Schema::Root>& root) {
   const LoopNode* mainLoop = nullptr;
 
   // Find the main loop node
-  for (auto* item : items()) {
-    if (auto* node = dynamic_cast<LoopNode*>(item)) {
-      if (node->isMainLoop()) {
-        mainLoop = node;
-        break;
-      }
+  for (const auto* item : items()) {
+    const auto* node = dynamic_cast<const LoopNode*>(item);
+    if (node != nullptr && node->isMainLoop()) {
+      mainLoop = node;
+      break;
     }
   }
 
@@ -141,6 +142,22 @@ bool Scene::serialize(const std::shared_ptr<Schema::Root>& root) {
 
   getLoopSchema(mainLoop, root->mutable_mainloop());
   return true;
+}
+
+bool Scene::load(const std::shared_ptr<Schema::Root>& root) {
+  if (root == nullptr || !root->has_mainloop() ||
+      root->mainloop().actions().empty()) {
+    ERROR("Invalid schema: Root or mainLoop is missing");
+    return false;
+  }
+
+  // Clear the scene
+  clear();
+
+  // Create the main loop node
+  auto* loopNode = new LoopNode(true);
+
+  return loadLoop(loopNode, root->mutable_mainloop());
 }
 
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
@@ -172,25 +189,28 @@ void Scene::keyPressEvent(QKeyEvent* event) {
   QGraphicsScene::keyPressEvent(event);
 }
 void Scene::getLoopSchema(const Node* loop, Schema::Loop* loopSchema) {
-  // TODO: Sort loop elements according to X position
-
   loopSchema->CopyFrom(loop->schema());
+  loopSchema->clear_actions();
   loopSchema->mutable_position()->set_x(loop->pos().x());
   loopSchema->mutable_position()->set_y(loop->pos().y());
 
-  for (auto* port : loop->getPorts()) {
+  for (const auto* port : loop->getPorts()) {
     if (port->getType() != PORT_TYPE::INPUT) {
-      for (auto* connection : port->connections()) {
-        Node* targetNode = connection->getEndPort()->parentNode();
-        if (auto* loopNode = dynamic_cast<LoopNode*>(targetNode)) {
+      for (const auto* connection : port->connections()) {
+        const auto* targetNode = connection->getEndPort()->parentNode();
+        if (const auto* loopNode = dynamic_cast<const LoopNode*>(targetNode)) {
           getLoopSchema(loopNode, loopSchema->add_actions()->mutable_loop());
-        } else if (auto* printNode = dynamic_cast<PrintNode*>(targetNode)) {
+        } else if (const auto* printNode =
+                       dynamic_cast<const PrintNode*>(targetNode)) {
           getPrintSchema(printNode, loopSchema->add_actions()->mutable_print());
-        } else if (auto* sleepNode = dynamic_cast<SleepNode*>(targetNode)) {
+        } else if (const auto* sleepNode =
+                       dynamic_cast<const SleepNode*>(targetNode)) {
           getSleepSchema(sleepNode, loopSchema->add_actions()->mutable_sleep());
-        } else if (auto* ledNode = dynamic_cast<LedNode*>(targetNode)) {
-          getLedSChema(ledNode, loopSchema->add_actions()->mutable_led());
-        } else if (auto* pwmNode = dynamic_cast<PwmNode*>(targetNode)) {
+        } else if (const auto* ledNode =
+                       dynamic_cast<const LedNode*>(targetNode)) {
+          getLedSchema(ledNode, loopSchema->add_actions()->mutable_led());
+        } else if (const auto* pwmNode =
+                       dynamic_cast<const PwmNode*>(targetNode)) {
           getPwmSchema(pwmNode, loopSchema->add_actions()->mutable_pwm());
         } else {
           ERROR("Unknown node type connected to loop: "
@@ -229,6 +249,94 @@ double Scene::getPositionX(const Schema::Action* action) {
   return 0.0;
 }
 
+bool Scene::loadLoop(LoopNode* loopNode, const Schema::Loop* loopSchema) {
+  if (loopSchema == nullptr || loopSchema == nullptr ||
+      loopSchema->actions().empty()) {
+    ERROR("Invalid loop schema: Loop or actions are missing");
+    return false;
+  }
+  NodePort* outputPort = nullptr;
+  for (auto* port : loopNode->getPorts()) {
+    if (port->getType() == PORT_TYPE::MULTI_OUTPUT) {
+      outputPort = port;
+      break;
+    }
+  }
+
+  if (outputPort == nullptr) {
+    ERROR("Main loop node has no multi-output port");
+    return false;
+  }
+  INFO("Add loop node");
+  loopNode->schema().CopyFrom(*loopSchema);
+  loopNode->setPos(loopSchema->position().x(), loopSchema->position().y());
+  addItem(loopNode);
+
+  for (const auto& action : loopSchema->actions()) {
+    switch (action.action_case()) {
+      case Schema::Action::kPrint: {
+        INFO("Add print node");
+        auto* node = new PrintNode();
+        node->setPos(action.print().position().x(),
+                     action.print().position().y());
+
+        node->schema().CopyFrom(action.print());
+        addItem(node);
+        createConnection(outputPort, node->getPorts().first());
+        break;
+      }
+      case Schema::Action::kSleep: {
+        INFO("Add sleep node");
+        auto* node = new SleepNode();
+        node->setPos(action.sleep().position().x(),
+                     action.sleep().position().y());
+        node->schema().CopyFrom(action.sleep());
+        addItem(node);
+        createConnection(outputPort, node->getPorts().first());
+        break;
+      }
+      case Schema::Action::kLed: {
+        INFO("Add LED node");
+        auto* node = new LedNode();
+        node->setPos(action.led().position().x(), action.led().position().y());
+        node->schema().CopyFrom(action.led());
+        addItem(node);
+        createConnection(outputPort, node->getPorts().first());
+
+        break;
+      }
+      case Schema::Action::kPwm: {
+        INFO("Add PWM node");
+        auto* node = new PwmNode();
+        node->setPos(action.pwm().position().x(), action.pwm().position().y());
+        node->schema().CopyFrom(action.pwm());
+        addItem(node);
+        createConnection(outputPort, node->getPorts().first());
+        break;
+      }
+      case Schema::Action::kLoop: {
+        INFO("Add loop node");
+        auto* node = new LoopNode();
+        loadLoop(node, &action.loop());
+        createConnection(outputPort, node->getPorts().first());
+        break;
+      }
+      case Schema::Action::ACTION_NOT_SET:
+        ERROR(
+            "Unknown action type in loop: " << action.GetDescriptor()->name());
+        return false;
+    }
+  }
+  return true;
+}
+
+void Scene::setModified(const bool isModified) {
+  if (mModified != isModified) {
+    mModified = isModified;
+    emit modified();
+  }
+}
+
 void Scene::getSleepSchema(const SleepNode* sleepNode,
                            Schema::Sleep* sleepSchema) {
   sleepSchema->CopyFrom(sleepNode->schema());
@@ -236,7 +344,7 @@ void Scene::getSleepSchema(const SleepNode* sleepNode,
   sleepSchema->mutable_position()->set_y(sleepNode->pos().y());
 }
 
-void Scene::getLedSChema(const LedNode* ledNode, Schema::LED* ledSchema) {
+void Scene::getLedSchema(const LedNode* ledNode, Schema::LED* ledSchema) {
   ledSchema->CopyFrom(ledNode->schema());
   ledSchema->mutable_position()->set_x(ledNode->pos().x());
   ledSchema->mutable_position()->set_y(ledNode->pos().y());
@@ -259,14 +367,13 @@ void Scene::deleteConnection(NodeConnector* conn) {
 }
 void Scene::deleteSelectedNodes() {
   for (QGraphicsItem* item : selectedItems()) {
-    if (auto* node = dynamic_cast<LoopNode*>(item)) {
-      if (node->isMainLoop()) {
-        // Don't delete the main loop node
-        continue;
-      }
+    if (const auto* loopNode = dynamic_cast<LoopNode*>(item);
+        loopNode != nullptr && loopNode->isMainLoop()) {
+      // Don't delete the main loop node
+      continue;
     }
-    if (auto* node = dynamic_cast<Node*>(item)) {
-      for (auto* port : node->getPorts()) {
+    if (const auto* node = dynamic_cast<Node*>(item)) {
+      for (const auto* port : node->getPorts()) {
         for (auto* conn : port->connections()) {
           deleteConnection(conn);
         }

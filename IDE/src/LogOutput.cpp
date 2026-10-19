@@ -12,7 +12,7 @@ void LogOutput::contextMenuEvent(QContextMenuEvent* event) {
                   "Delete All", this);
 
   connect(deleteAllAction, &QAction::triggered, this,
-          [this]() { this->clear(); });
+          [this] { this->clear(); });
 
   menu->addAction(deleteAllAction);
 

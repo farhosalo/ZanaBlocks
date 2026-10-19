@@ -2,7 +2,6 @@
 
 #include <libserialport.h>
 
-#include <chrono>
 #include <cstddef>
 #include <cstdio>
 #include <thread>
@@ -21,13 +20,6 @@ using std::chrono::milliseconds;
 using std::chrono::steady_clock;
 
 namespace ZanaBlocks::EspTools {
-
-struct FlashPort {
-  esp_loader_port_t mBaseFlashPort{};  // must be first
-  sp_port* mSerialPort = nullptr;
-  uint32_t mTimeoutMs = 0;
-  steady_clock::time_point mTimerStart;
-};
 
 namespace {
 /**
@@ -56,14 +48,14 @@ esp_loader_error_t seriallPortResult2FlashPortResult(sp_return serialPortReturn,
 esp_loader_error_t opWrite(esp_loader_port_t* baseFlashPort,
                            const uint8_t* data, uint16_t size,
                            uint32_t timeoutMs) {
-  auto result = sp_blocking_write(cast(baseFlashPort)->mSerialPort, data, size,
-                                  timeoutMs);
+  const auto result = sp_blocking_write(cast(baseFlashPort)->mSerialPort, data,
+                                        size, timeoutMs);
   return seriallPortResult2FlashPortResult(result, size);
 }
 
 esp_loader_error_t opRead(esp_loader_port_t* baseFlashPort, uint8_t* data,
                           uint16_t size, uint32_t timeoutMs) {
-  auto result =
+  const auto result =
       sp_blocking_read(cast(baseFlashPort)->mSerialPort, data, size, timeoutMs);
   return seriallPortResult2FlashPortResult(result, size);
 }
@@ -74,7 +66,7 @@ void opEnterBootloader(esp_loader_port_t* /*baseFlashPort*/) {
 }
 void opReset(esp_loader_port_t* baseFlashPort) {
   auto constexpr sleepDuration{100ms};
-  auto* flashPort = cast(baseFlashPort);
+  const auto* flashPort = cast(baseFlashPort);
   sp_set_rts(flashPort->mSerialPort, SP_RTS_ON);
   std::this_thread::sleep_for(sleepDuration);
   sp_set_rts(flashPort->mSerialPort, SP_RTS_OFF);
@@ -91,8 +83,8 @@ void opStartTimer(esp_loader_port_t* baseFlashPort, uint32_t timeoutMs) {
 }
 
 uint32_t opRemaining(esp_loader_port_t* baseFlashPort) {
-  auto* flashPort = cast(baseFlashPort);
-  auto elapsed = static_cast<uint32_t>(
+  const auto* flashPort = cast(baseFlashPort);
+  const auto elapsed = static_cast<uint32_t>(
       duration_cast<milliseconds>(steady_clock::now() - flashPort->mTimerStart)
           .count());
   return (elapsed >= flashPort->mTimeoutMs) ? 0U
@@ -135,8 +127,8 @@ static const esp_loader_port_ops_t s_ops = {
     .sdio_card_init = nullptr,
 };
 
-FlashPort* createSerialPort(sp_port* serialPort) {
-  auto* flashPort = new FlashPort{};
+std::unique_ptr<FlashPort> createSerialPort(sp_port* serialPort) {
+  auto flashPort = std::make_unique<FlashPort>();
   flashPort->mBaseFlashPort.ops = &s_ops;
   flashPort->mSerialPort = serialPort;
   return flashPort;

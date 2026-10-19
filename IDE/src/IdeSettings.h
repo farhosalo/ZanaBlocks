@@ -39,6 +39,7 @@ class SettingsDialog : public QDialog {
   QPushButton* mFlashButton;
 
   std::unique_ptr<EspTools::EspFlasher> mFlasher{
-      std::make_unique<EspTools::EspFlasher>()};
+      std::make_unique<EspTools::EspFlasher>(),
+  };
 };
 }  // namespace ZanaBlocks::IDE

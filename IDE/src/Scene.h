@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QGraphicsScene>
+#include <QObject>
 
 #include "NodePort.h"
 
@@ -76,6 +77,29 @@ class Scene : public QGraphicsScene {
    */
   bool serialize(const std::shared_ptr<Schema::Root>& root);
 
+  /**
+   * @brief Loads a diagram from a Protobuf schema.
+   * @param root The root schema object containing the diagram data.
+   * @return True if the diagram was loaded successfully, false otherwise.
+   */
+  bool load(const std::shared_ptr<Schema::Root>& root);
+
+  /**
+   * @brief Checks if the scene has been modified.
+   * @return True if the scene has been modified, false otherwise.
+   */
+  [[nodiscard]] bool isModified() const { return mModified; }
+
+  /**
+   * @brief Sets the modified state of the scene and emits the modified signal
+   * if the state has changed.
+   * @param modified The state to be set
+   */
+  void setModified(bool modified);
+
+ signals:
+  void modified();
+
  private:
   void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
@@ -109,7 +133,7 @@ class Scene : public QGraphicsScene {
    * @param ledNode The LedNode to serialize.
    * @param ledSchema The Protobuf LED message to populate.
    */
-  static void getLedSChema(const LedNode* ledNode, Schema::LED* ledSchema);
+  static void getLedSchema(const LedNode* ledNode, Schema::LED* ledSchema);
 
   /**
    * * @brief Populates a PWM schema from a PwmNode.
@@ -126,11 +150,15 @@ class Scene : public QGraphicsScene {
   void deleteSelectedConnections();
   static double getPositionX(const Schema::Action* action);
 
+  bool loadLoop(LoopNode* loopNode, const Schema::Loop* loopSchema);
+
   /** @brief The starting port for the current connection. */
   NodePort* mStartPort = nullptr;
 
   /** @brief The temporary connection line during dragging. */
   QGraphicsPathItem* mTempConnection = nullptr;
+
+  bool mModified = false;
 };
 }  // namespace IDE
 }  // namespace ZanaBlocks

@@ -5,7 +5,7 @@ on:
   pull_request:
 
 env:
-  QT_VERSION: "6.8.3"
+  QT_VERSION: "6.9.3"
   BUILD_TYPE: Release
   APP_NAME: "ZanaBlocks"     
   ICON_PATH: "IDE/assets/icon.png" 
@@ -26,7 +26,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             cmake ninja-build \
-            libserialport-dev
+            libserialport-dev \
+            libgtest-dev libgmock-dev
 
       - name: Cache Protobuf
         id: cache-protobuf
@@ -67,6 +68,11 @@ jobs:
 
       - name: Build
         run: cmake --build build --parallel
+
+      - name: Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build --output-on-failure --parallel
 
       - name: Install into AppDir
         run: cmake --install build --prefix AppDir/usr
@@ -140,6 +146,7 @@ jobs:
             cmake ninja \
             protobuf \
             libserialport \
+            googletest \
             clang-format \
             llvm
           echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
@@ -163,6 +170,11 @@ jobs:
 
       - name: Build
         run: cmake --build build --parallel
+
+      - name: Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build --output-on-failure --parallel
 
       - name: Install into staging
         run: cmake --install build --prefix staging
@@ -254,11 +266,18 @@ jobs:
         with:
           msystem: MINGW64
           update: true
+          # autotools toolchain needed to build libserialport from source
+          install: >-
+            git
+            make
+            autoconf
+            automake
+            libtool
           pacboy: >-
             cmake:p
             ninja:p
             protobuf:p
-            libserialport:p
+            gtest:p
             qt6-base:p
             qt6-tools:p
             cc:p
@@ -268,6 +287,15 @@ jobs:
       - name: Install NSIS
         shell: pwsh
         run: choco install nsis -y
+
+      - name: Build and install libserialport
+        run: |
+          git clone --depth 1 https://github.com/sigrokproject/libserialport.git /tmp/libserialport
+          cd /tmp/libserialport
+          ./autogen.sh
+          ./configure --prefix=/mingw64
+          make -j$(nproc)
+          make install
 
       - name: Generate libserialport cmake config
         run: |
@@ -290,6 +318,11 @@ jobs:
 
       - name: Build
         run: cmake --build build --parallel
+
+      - name: Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build --output-on-failure --parallel
 
       - name: Install into dist
         run: cmake --install build --prefix dist

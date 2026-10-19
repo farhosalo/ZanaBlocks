@@ -3,6 +3,7 @@
 #include <QAction>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QFileDialog>
 #include <QGraphicsScene>
 #include <QMenu>
 #include <QMenuBar>
@@ -24,6 +25,7 @@
 #include "LogOutput.h"
 #include "Logging.h"
 #include "LoopNode.h"
+#include "Protobuf.h"
 #include "ReplClient.h"
 #include "Scene.h"
 #include "Schema.pb.h"
@@ -33,6 +35,9 @@
 namespace ZanaBlocks::IDE {
 auto constexpr WINDOW_SIZE_WIDTH{1100};
 auto constexpr WINDOW_SIZE_HEIGHT{750};
+auto constexpr DisplayDurationMs = 5000;
+
+auto constexpr WindowTitle{"ZanaBlocks IDE"};
 
 auto MainWindow::run() {
   // NOLINTBEGIN  [bugprone-exception-escape]
@@ -58,15 +63,15 @@ auto MainWindow::run() {
     }
     mSerialPort = ports.at(0);
   }
-  auto connection = EspTools::connect(mSerialPort);
+  const auto connection = EspTools::connect(mSerialPort);
 
   if (connection == nullptr) {
     logMessage("Failed to connect to device: " + mSerialPort);
     return;
   }
-  auto replClient = std::make_shared<EspTools::ReplClient>(connection);
+  const auto replClient = std::make_shared<EspTools::ReplClient>(connection);
   replClient->setOnLogs(logMessage);
-  auto probeResult = replClient->probe();
+  const auto probeResult = replClient->probe();
 
   if (!probeResult.isMicroPython) {
     logMessage(
@@ -78,12 +83,15 @@ auto MainWindow::run() {
   logMessage("Device version : " + probeResult.firmwareVersion + " (" +
              probeResult.hardwareModel + ")");
 
-  auto schema = std::make_shared<Schema::Root>();
+  const auto schema = std::make_shared<Schema::Root>();
 
   mDiagramScene->serialize(schema);
 
   Interpreter::Interpreter interpreter;
-  interpreter.interpret(schema);
+  if (!interpreter.interpret(schema)) {
+    ERROR("Failed to interpret the schema");
+    return;
+  }
   interpreter.saveToFile("main.py");
 
   logMessage("Uploading main.py...");
@@ -100,19 +108,80 @@ auto MainWindow::run() {
 
   logMessage("Done.");
 }
-auto MainWindow::save() {
-  mLogOutput->appendPlainText("Saving the program...");
+
+void MainWindow::newDiagram() {
+  if (showUnsavedDiagramWarning()) {
+    mDiagramScene->clear();
+    auto* node = new LoopNode(true);
+    node->setPos(0, 0);
+    mDiagramScene->addItem(node);
+    mFileName.clear();
+  }
 }
-auto MainWindow::open() { mLogOutput->appendPlainText("Opening a program..."); }
+
+void MainWindow::saveAs() {
+  mFileName = QFileDialog::getSaveFileName(
+      this, tr("Save File"), "", tr("Binary Files (*.bin);;All Files (*)"));
+  if (!mFileName.isEmpty()) {
+    save();
+  }
+}
+void MainWindow::save() {
+  if (mFileName.isEmpty()) {
+    saveAs();
+    return;
+  }
+  if (!mFileName.isEmpty()) {
+    const auto schema = std::make_shared<Schema::Root>();
+    mDiagramScene->serialize(schema);
+    // INFO(schema->DebugString());
+
+    if (Utilities::saveProtobuf2File(mFileName.toStdString(), *schema)) {
+      statusBar()->showMessage("File saved: " + mFileName, DisplayDurationMs);
+      mDiagramScene->setModified(false);
+    } else {
+      QMessageBox::warning(this, "Save Error", "Failed to save file.");
+    }
+  }
+}
+auto MainWindow::open() {
+  if (!showUnsavedDiagramWarning()) {
+    return;
+  }
+
+  const QString fileName = QFileDialog::getOpenFileName(
+      this, tr("Open File"), "", tr("Binary Files (*.bin);;All Files (*)"));
+
+  if (!fileName.isEmpty()) {
+    const auto schema = std::make_shared<Schema::Root>();
+    if (Utilities::loadProtobufFromFile(fileName.toStdString(), *schema)) {
+      mDiagramScene->load(schema);
+
+      statusBar()->showMessage("File opened: " + fileName, DisplayDurationMs);
+      mFileName = fileName;
+      mDiagramScene->setModified(false);
+    } else {
+      QMessageBox::warning(this, "Open Error", "Failed to open file.");
+    }
+  }
+}
 
 auto MainWindow::settings() {
   SettingsDialog dialog(this);
   if (dialog.exec() == QDialog::Accepted) {
-    auto* port = dialog.findChild<QComboBox*>("Port:");
+    const auto* port = dialog.findChild<QComboBox*>("Port:");
     if (port != nullptr) {
       mSerialPort = port->currentText().toStdString();
     }
   }
+}
+
+void MainWindow::closeEvent(QCloseEvent* event) {
+  if (!showUnsavedDiagramWarning()) {
+    event->ignore();
+    return;
+  }
+  event->accept();
 }
 
 auto MainWindow::initUI() {
@@ -148,9 +217,9 @@ auto MainWindow::initUI() {
   mainSplitter->addWidget(verticalSplitter);
 
   // Set initial proportions
-  const auto MainAreaStechFactor = 8;
-  mainSplitter->setStretchFactor(0, 1);                    // sidebar smaller
-  mainSplitter->setStretchFactor(1, MainAreaStechFactor);  // main area bigger
+  constexpr auto MainAreaStrechFactor = 8;
+  mainSplitter->setStretchFactor(0, 1);                     // sidebar smaller
+  mainSplitter->setStretchFactor(1, MainAreaStrechFactor);  // main area bigger
 
   setCentralWidget(mainSplitter);
 }
@@ -160,19 +229,33 @@ auto MainWindow::initMenuAndToolbar() {
   auto* fileMenu = menuBar()->addMenu("&File");
 
   // File menu actions
+  auto* newAction = fileMenu->addAction("➕  New");
+  newAction->setShortcut(QKeySequence::New);
+  fileMenu->addSeparator();
+
   auto* openAction = fileMenu->addAction("📂  Open");
+  openAction->setShortcut(QKeySequence::Open);
+  fileMenu->addSeparator();
+
   auto* saveAction = fileMenu->addAction("💾  Save");
+  saveAction->setShortcut(QKeySequence::Save);
+  auto* saveAsAction = fileMenu->addAction("💾  Save As...");
+  saveAsAction->setShortcut(QKeySequence::SaveAs);
 
   fileMenu->addSeparator();
   auto* closeAction = fileMenu->addAction("❌  Close");
+  closeAction->setShortcut(QKeySequence::Close);
 
+  toolBar->addAction(newAction);
   toolBar->addAction(openAction);
   toolBar->addAction(saveAction);
-  toolBar->addAction(closeAction);
+  toolBar->addSeparator();
 
   connect(openAction, &QAction::triggered, this, &MainWindow::open);
   connect(saveAction, &QAction::triggered, this, &MainWindow::save);
+  connect(saveAsAction, &QAction::triggered, this, &MainWindow::saveAs);
   connect(closeAction, &QAction::triggered, this, &QWidget::close);
+  connect(newAction, &QAction::triggered, this, &MainWindow::newDiagram);
 
   // Run menu actions
   auto* runMenu = menuBar()->addMenu("&Run");
@@ -181,14 +264,16 @@ auto MainWindow::initMenuAndToolbar() {
   toolBar->addSeparator();
   toolBar->addAction(runAction);
 
-  connect(runAction, &QAction::triggered, this, [this]() {
-    auto future = QtConcurrent::run([this]() { run(); });
+  connect(runAction, &QAction::triggered, this, [this] {
+    const auto future = QtConcurrent::run([this] { run(); });
     (void)future;
   });
 
   // Settings
   auto* settingsMenu = menuBar()->addMenu("&Settings");
   auto* settingsAction = settingsMenu->addAction("⚙️  Settings");
+  settingsAction->setShortcut(QKeySequence::Preferences);
+
   toolBar->addSeparator();
   toolBar->addAction(settingsAction);
 
@@ -197,18 +282,19 @@ auto MainWindow::initMenuAndToolbar() {
   // Help
   auto* helpMenu = menuBar()->addMenu("&Help");
   auto* aboutAction = helpMenu->addAction("ℹ️  About");
+  aboutAction->setShortcut(QKeySequence::HelpContents);
   auto* licensesAction = helpMenu->addAction("📄  Licenses");
 
   toolBar->addSeparator();
   toolBar->addAction(aboutAction);
   toolBar->addAction(licensesAction);
 
-  connect(aboutAction, &QAction::triggered, this, [this]() {
+  connect(aboutAction, &QAction::triggered, this, [this] {
     AboutDialog dialog(this);
     dialog.exec();
   });
 
-  connect(licensesAction, &QAction::triggered, this, [this]() {
+  connect(licensesAction, &QAction::triggered, this, [this] {
     LicensesDialog dialog(this);
     dialog.exec();
   });
@@ -242,24 +328,24 @@ auto MainWindow::initSidebar() {
   mSidebar->addWidget(pwmButton);
 }
 
-MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent), mSchema(std::make_shared<Schema::Root>()) {
-  setWindowTitle("ZanaBlocks IDE");
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   resize(WINDOW_SIZE_WIDTH, WINDOW_SIZE_HEIGHT);
 
   initSidebar();
   initUI();
   initMenuAndToolbar();
+  updateTitle();
 
   // Add main loop node to the scene
-  // TODO: Only if new diagram is created, not when loading an existing one
   {
     auto* node = new LoopNode(true);
     node->setPos(0, 0);
     mDiagramScene->addItem(node);
-
-    checkFirstApplicationRun();
   }
+
+  checkFirstApplicationRun();
+
+  connect(mDiagramScene, &Scene::modified, this, [this] { updateTitle(); });
 }
 void MainWindow::checkFirstApplicationRun() {
   QSettings settings("ZanaBlocks", "IDE");
@@ -292,5 +378,30 @@ void MainWindow::checkFirstApplicationRun() {
       settings.setValue("safetyNoticeAccepted", false);
     }
   }
+}
+
+void MainWindow::updateTitle() {
+  auto displayName = mFileName.isEmpty() ? "Untitled" : mFileName;
+  if (mDiagramScene->isModified()) {
+    displayName += "*";
+  }
+  setWindowTitle(QString("%1 - %2").arg(displayName).arg(WindowTitle));
+}
+bool MainWindow::showUnsavedDiagramWarning() {
+  if (mDiagramScene->isModified()) {
+    // QMessageBox::StandardButton reply;
+    const auto reply = QMessageBox::warning(
+        this, "Unsaved Diagram",
+        "The current diagram has unsaved changes. Do you want to save them?",
+        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    if (reply == QMessageBox::Save) {
+      save();
+    } else if (reply == QMessageBox::Discard) {
+      mDiagramScene->setModified(false);
+    } else {
+      return false;
+    }
+  }
+  return true;
 }
 }  // namespace ZanaBlocks::IDE

@@ -15,9 +15,6 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
-add_compile_definitions(
-    QT_NO_KEYWORDS          # Avoid signal/slot macro conflicts
-)
 
 # Compiler options 
 if (MSVC)
@@ -76,6 +73,12 @@ file(GLOB_RECURSE LICENSE_FILES
 install(FILES ${LICENSE_FILES}
     DESTINATION share/licenses
 )
+
+option(ENABLE_TESTS "Enable tests" ON)
+
+if (${ENABLE_TESTS})
+    enable_testing()
+endif()
 
 add_subdirectory(Schema)
 add_subdirectory(Interpreter)

@@ -2,7 +2,6 @@
 #include <QMainWindow>
 
 class QPlainTextEdit;
-class LoopItem;
 class QToolBar;
 
 namespace ZanaBlocks {
@@ -24,24 +23,29 @@ class MainWindow : public QMainWindow {
   explicit MainWindow(QWidget* parent = nullptr);
 
  private:
+  void closeEvent(QCloseEvent* event) override;
   auto initUI();
   auto initMenuAndToolbar();
   auto initSidebar();
 
   auto run();
-  auto save();
+  void newDiagram();
+  void saveAs();
+  void save();
   auto open();
   auto settings();
   static void checkFirstApplicationRun();
+
+  void updateTitle();
+  bool showUnsavedDiagramWarning();
 
   View* mDiagramView{nullptr};
   Scene* mDiagramScene{nullptr};
   LogOutput* mLogOutput{nullptr};
   QToolBar* mSidebar{nullptr};
-  LoopItem* mMainLoop{nullptr};
+  QString mFileName;
 
   std::string mSerialPort;
-  std::shared_ptr<Schema::Root> mSchema;
 };
 }  // namespace IDE
 }  // namespace ZanaBlocks
